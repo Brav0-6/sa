@@ -1,0 +1,632 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Your Cart - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-section {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .cart-table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .cart-table th {
+        font-weight: 600;
+        color: var(--bs-primary);
+        border-bottom: 2px solid var(--bs-primary);
+        padding: 15px 10px;
+    }
+    
+    .cart-table td {
+        padding: 15px 10px;
+        vertical-align: middle;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .cart-image {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 6px;
+        transition: transform 0.3s ease;
+    }
+    
+    .cart-image:hover {
+        transform: scale(1.1);
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .quantity-btn {
+        background: #f5f5f5;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .quantity-btn:hover {
+        background: #e9e9e9;
+    }
+    
+    .quantity-input {
+        width: 50px;
+        border: none;
+        text-align: center;
+        font-weight: 500;
+    }
+    
+    .summary-card {
+        background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        animation: fadeInRight 0.5s ease-out;
+    }
+    
+    .summary-card .card-title {
+        color: var(--bs-primary);
+        font-weight: 600;
+    }
+    
+    .coupon-card {
+        border: 1px dashed #ddd;
+        background-color: #fafafa;
+        animation: fadeInUp 0.7s ease-out;
+    }
+    
+    .empty-cart {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .empty-cart i {
+        color: #ddd;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .btn-proceed {
+        background: linear-gradient(to right, var(--bs-primary), #6c5ce7);
+        border: none;
+        color: white;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-proceed:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2);
+    }
+    
+    .shipping-badge {
+        padding: 3px 10px;
+        font-size: 12px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .shipping-badge.free {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .shipping-badge.standard {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .shipping-badge.location {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .shipping-method {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .shipping-method:hover {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+    
+    .shipping-method.selected {
+        border-color: var(--bs-primary);
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+    
+    .shipping-method.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .shipping-method-icon {
+        margin-right: 8px;
+        color: #6c757d;
+    }
+    
+    .shipping-method-name {
+        font-weight: 500;
+        font-size: 14px;
+    }
+    
+    .shipping-method-description {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    #shipping-cost-display {
+        transition: all 0.3s ease;
+    }
+    
+    .shipping-message {
+        margin-top: 8px;
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+    </ol>
+</nav>
+
+<h2 class="section-title mb-4">Your Shopping Cart</h2>
+
+{% if cart_items %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Cart Items Table -->
+        <div class="table-responsive mb-4 cart-section p-3">
+            <table class="table cart-table align-middle">
+    <thead>
+        <tr>
+                        <th scope="col" colspan="2">Product</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart_items %}
+        <tr>
+                        <td width="80">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-image">
+                        </td>
+                        <td>
+                            <h6 class="mb-0"><a href="{% url 'product_detail' item.product.id %}" class="text-decoration-none text-dark">{{ item.product.name }}</a></h6>
+                            {% if item.product.brand %}
+                            <small class="text-muted">{{ item.product.brand.name }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="item-price">₹{{ item.product.get_current_price }}</td>
+                        <td>
+                            <div class="quantity-control">
+                                <button type="button" class="quantity-btn decrement-qty">-</button>
+                                <input type="number" value="{{ item.quantity }}" min="1" class="quantity-input" data-item-id="{{ item.id }}">
+                                <button type="button" class="quantity-btn increment-qty">+</button>
+                            </div>
+                        </td>
+                        <td>₹{{ item.total_price }}</td>
+                        <td>
+                            <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+        </div>
+        
+        <!-- Continue Shopping and Clear Cart buttons -->
+        <div class="d-flex justify-content-between mb-4">
+            <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+            </a>
+            <a href="#" class="btn btn-outline-danger">
+                <i class="fas fa-trash-alt me-2"></i>Clear Cart
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Cart Total -->
+        <div class="card summary-card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Order Summary</h5>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal</span>
+                    <span>₹{{ total }}</span>
+                </div>
+                
+                <!-- Shipping Method Section -->
+                <h6 class="mb-2 mt-3">Shipping Method</h6>
+                <div id="shipping-methods-container">
+                    {% for rate in shipping_rates %}
+                    <div class="shipping-method {% if rate.is_selected %}selected{% endif %} {% if rate.is_disabled %}disabled{% endif %}" 
+                         data-method="{{ rate.id }}" 
+                         data-cost="{{ rate.cost }}" 
+                         data-is-free="{{ rate.is_free|lower }}">
+                        <div>
+                            <div class="shipping-method-name">
+                                <i class="fas fa-{% if rate.is_free %}gift{% elif 'pincode' in rate.id %}map-marker-alt{% elif 'city' in rate.id or 'region' in rate.id %}map-marked{% else %}truck{% endif %} shipping-method-icon"></i>
+                                {{ rate.name }}
+                            </div>
+                            <div class="shipping-method-description">{{ rate.description }}</div>
+                        </div>
+                        <div id="shipping-cost-display">
+                            <span class="shipping-badge {% if rate.is_free %}free{% else %}standard{% endif %}">
+                                {% if rate.is_free %}Free{% else %}₹{{ rate.cost }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div id="shipping-message" class="shipping-message">
+                    {% if is_free_shipping %}
+                    <div class="alert alert-success p-2 mb-3">
+                        <small><i class="fas fa-check-circle me-1"></i>You've qualified for free shipping!</small>
+                    </div>
+                    {% else %}
+                        {% if free_shipping_threshold > 0 %}
+                        <div class="alert alert-info p-2 mb-3">
+                            <small><i class="fas fa-info-circle me-1"></i>Add ₹{{ free_shipping_threshold|sub:total }} more to qualify for free shipping</small>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-4">
+                    <strong>Total</strong>
+                    <strong class="cart-total">₹{{ final_total }}</strong>
+                </div>
+                
+                <a href="{% url 'buy_product' %}" class="btn btn-primary btn-proceed w-100">
+                    Proceed to Checkout <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Coupon Code -->
+        <div class="card mt-3 coupon-card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Apply Coupon</h5>
+                <form>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Coupon code">
+                        <button class="btn btn-outline-primary" type="button">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 empty-cart">
+    <div class="mb-4">
+        <i class="fas fa-shopping-cart fa-5x text-muted"></i>
+    </div>
+    <h3 class="mb-3">Your cart is empty</h3>
+    <p class="mb-4">Looks like you haven't added any items to your cart yet.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary">Start Shopping</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update quantity controls
+        const decrementBtns = document.querySelectorAll('.decrement-qty');
+        const incrementBtns = document.querySelectorAll('.increment-qty');
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        
+        decrementBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentNode.querySelector('.quantity-input');
+                let value = parseInt(input.value);
+                if (value > 1) {
+                    input.value = value - 1;
+                    updateCartItem(input);
+                }
+            });
+        });
+        
+        incrementBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.parentNode.querySelector('.quantity-input');
+                let value = parseInt(input.value);
+                input.value = value + 1;
+                updateCartItem(input);
+            });
+        });
+        
+        quantityInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                updateCartItem(this);
+            });
+        });
+        
+        // Shipping method selection 
+        const shippingMethods = document.querySelectorAll('.shipping-method');
+        shippingMethods.forEach(method => {
+            method.addEventListener('click', function() {
+                // Don't process if disabled
+                if (this.classList.contains('disabled')) {
+                    return;
+                }
+                
+                // Remove selected class from all methods
+                shippingMethods.forEach(m => m.classList.remove('selected'));
+                
+                // Add selected class to clicked method
+                this.classList.add('selected');
+                
+                // Get the shipping cost and update the total
+                const isFreeDeterminedByCartTotal = '{{ is_free_shipping }}' === 'True';
+                const isFree = this.dataset.isFree === 'true' || isFreeDeterminedByCartTotal;
+                const cost = isFree ? 0 : parseFloat(this.dataset.cost);
+                const subtotal = parseFloat('{{ total }}');
+                const total = subtotal + cost;
+                
+                // Update the displayed shipping cost and total
+                const cartTotal = document.querySelector('.cart-total');
+                if (cartTotal) {
+                    cartTotal.textContent = `₹${total.toFixed(2)}`;
+                }
+                
+                // Store selected shipping method to use at checkout
+                localStorage.setItem('selectedShippingMethod', this.dataset.method);
+                localStorage.setItem('selectedShippingCost', cost);
+                
+                // Send selected method to server
+                sendSelectedShippingMethod(this.dataset.method, cost);
+            });
+        });
+        
+        function sendSelectedShippingMethod(methodId, cost) {
+            // Send an AJAX request to update the selected shipping method
+            fetch('{% url "update_shipping_method" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    method_id: methodId,
+                    cost: cost
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Shipping method updated successfully');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating shipping method:', error);
+            });
+        }
+        
+        function updateCartItem(input) {
+            const itemId = input.dataset.itemId;
+            const quantity = input.value;
+            
+            // Add animation to show updating
+            input.closest('tr').style.backgroundColor = '#f8f9fa';
+            setTimeout(() => {
+                input.closest('tr').style.backgroundColor = '';
+            }, 500);
+            
+            // Send AJAX request to update cart
+            fetch('{% url "update_cart_quantity" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the item total
+                    const itemRow = input.closest('tr');
+                    const itemTotal = itemRow.querySelector('td:nth-child(5)');
+                    itemTotal.textContent = `₹${data.item_total.toFixed(2)}`;
+                    
+                    // Update the cart subtotal
+                    document.querySelector('.d-flex.justify-content-between.mb-2:nth-child(1) span:nth-child(2)').textContent = `₹${data.cart_subtotal.toFixed(2)}`;
+                    
+                    // Update shipping rates if they were returned
+                    if (data.shipping_rates && Array.isArray(data.shipping_rates)) {
+                        const shippingMethodsContainer = document.getElementById('shipping-methods-container');
+                        let selectedMethodId = null;
+                        
+                        // Store currently selected method if any
+                        const selectedMethod = document.querySelector('.shipping-method.selected');
+                        if (selectedMethod) {
+                            selectedMethodId = selectedMethod.dataset.method;
+                        }
+                        
+                        // Clear the container
+                        shippingMethodsContainer.innerHTML = '';
+                        
+                        // Generate HTML for each shipping rate
+                        data.shipping_rates.forEach(rate => {
+                            // Determine if this should be selected
+                            let isSelected = false;
+                            
+                            if (selectedMethodId && selectedMethodId === rate.id) {
+                                // Keep the previously selected method if it's still available
+                                isSelected = true;
+                            } else if (!selectedMethodId) {
+                                // If no method was previously selected, use the default selection from the server
+                                isSelected = rate.is_selected;
+                            }
+                            
+                            // Create the shipping method element
+                            const iconClass = rate.is_free ? 'gift' : 
+                                             rate.id.includes('pincode') ? 'map-marker-alt' : 
+                                             (rate.id.includes('city') || rate.id.includes('region')) ? 'map-marked' : 'truck';
+                            
+                            const badgeClass = rate.is_free ? 'free' : 'standard';
+                            const costDisplay = rate.is_free ? 'Free' : `₹${parseFloat(rate.cost).toFixed(2)}`;
+                            
+                            const methodHTML = `
+                                <div class="shipping-method ${isSelected ? 'selected' : ''} ${rate.is_disabled ? 'disabled' : ''}" 
+                                     data-method="${rate.id}" 
+                                     data-cost="${rate.cost}" 
+                                     data-is-free="${rate.is_free}">
+                                    <div>
+                                        <div class="shipping-method-name">
+                                            <i class="fas fa-${iconClass} shipping-method-icon"></i>
+                                            ${rate.name}
+                                        </div>
+                                        <div class="shipping-method-description">${rate.description}</div>
+                                    </div>
+                                    <div id="shipping-cost-display">
+                                        <span class="shipping-badge ${badgeClass}">${costDisplay}</span>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            shippingMethodsContainer.innerHTML += methodHTML;
+                        });
+                        
+                        // Re-attach click events to the new shipping method elements
+                        const newShippingMethods = document.querySelectorAll('.shipping-method');
+                        newShippingMethods.forEach(method => {
+                            method.addEventListener('click', function() {
+                                // Don't process if disabled
+                                if (this.classList.contains('disabled')) {
+                                    return;
+                                }
+                                
+                                // Remove selected class from all methods
+                                newShippingMethods.forEach(m => m.classList.remove('selected'));
+                                
+                                // Add selected class to clicked method
+                                this.classList.add('selected');
+                                
+                                // Get the shipping cost and update the total
+                                const isFree = this.dataset.isFree === 'true' || data.is_free_shipping;
+                                const cost = isFree ? 0 : parseFloat(this.dataset.cost);
+                                const subtotal = data.cart_subtotal;
+                                const total = subtotal + cost;
+                                
+                                // Update the displayed shipping cost and total
+                                const cartTotal = document.querySelector('.cart-total');
+                                if (cartTotal) {
+                                    cartTotal.textContent = `₹${total.toFixed(2)}`;
+                                }
+                                
+                                // Store selected shipping method to use at checkout
+                                localStorage.setItem('selectedShippingMethod', this.dataset.method);
+                                localStorage.setItem('selectedShippingCost', cost);
+                                
+                                // Send selected method to server
+                                sendSelectedShippingMethod(this.dataset.method, cost);
+                            });
+                        });
+                    }
+                    
+                    // Update shipping message
+                    let alertHTML = '';
+                    if (data.is_free_shipping) {
+                        // Show success alert for free shipping
+                        alertHTML = `
+                            <div class="alert alert-success p-2 mb-3">
+                                <small><i class="fas fa-check-circle me-1"></i>You've qualified for free shipping!</small>
+                            </div>
+                        `;
+                    } else if (data.free_shipping_threshold > 0 && data.remaining_for_free > 0) {
+                        // Show info alert for additional amount needed
+                        alertHTML = `
+                            <div class="alert alert-info p-2 mb-3">
+                                <small><i class="fas fa-info-circle me-1"></i>Add ₹${data.remaining_for_free.toFixed(2)} more to qualify for free shipping</small>
+                            </div>
+                        `;
+                    }
+                    
+                    // Replace the existing alert
+                    document.getElementById('shipping-message').innerHTML = alertHTML;
+                    
+                    // Update the cart total
+                    document.querySelector('.cart-total').textContent = `₹${data.cart_total.toFixed(2)}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating cart:', error);
+            });
+        }
+    });
+</script>
+{% endblock %}

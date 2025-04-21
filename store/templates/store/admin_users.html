@@ -1,0 +1,519 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Admin Users - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        margin-top: 2rem;
+        margin-bottom: 4rem;
+    }
+    
+    .admin-sidebar {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+    }
+    
+    .admin-sidebar .nav-link {
+        color: #666;
+        padding: 0.5rem 0.8rem;
+        border-radius: 5px;
+        margin-bottom: 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-sidebar .nav-link:hover {
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+        color: var(--primary-color);
+    }
+    
+    .admin-sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .admin-sidebar .nav-link i {
+        width: 22px;
+    }
+    
+    .admin-content {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+    
+    .summary-card {
+        padding: 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-card.primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .summary-card.secondary {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    
+    .summary-card.success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .summary-card.warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .summary-card-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+    }
+    
+    .summary-card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .badge-role {
+        padding: 0.4rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .badge-admin {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #c82333;
+    }
+    
+    .badge-staff {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #c69500;
+    }
+    
+    .badge-customer {
+        background-color: rgba(0, 123, 255, 0.15);
+        color: #0069d9;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    
+    .status-active {
+        background-color: #28a745;
+    }
+    
+    .status-inactive {
+        background-color: #dc3545;
+    }
+    
+    .toolbar {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .sort-select, .filter-select {
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        padding: 0.375rem 0.75rem;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .filter-label {
+        margin-right: 0.5rem;
+        font-weight: 500;
+        color: #555;
+    }
+    
+    .pagination {
+        margin-bottom: 0;
+    }
+    
+    .pagination .page-link {
+        color: #333;
+        border: none;
+        border-radius: 4px;
+        margin: 0 2px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .user-actions-dropdown .dropdown-toggle::after {
+        display: none;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .user-time {
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="admin-sidebar">
+                <h5 class="mb-3">Admin Dashboard</h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_products' %}">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_categories' %}">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_orders' %}">
+                        <i class="fas fa-shopping-cart"></i> Orders
+                    </a>
+                    <a class="nav-link active" href="{% url 'admin_users' %}">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="admin-content">
+                <h2 class="page-title">
+                    <i class="fas fa-users me-2"></i> Users Management
+                </h2>
+                
+                <!-- Summary Cards -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="summary-card primary">
+                            <h6 class="summary-card-title">Total Users</h6>
+                            <p class="summary-card-value">{{ total_users }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="summary-card warning">
+                            <h6 class="summary-card-title">Staff Users</h6>
+                            <p class="summary-card-value">{{ staff_count }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="summary-card success">
+                            <h6 class="summary-card-title">Active Users</h6>
+                            <p class="summary-card-value">{{ active_count }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Toolbar -->
+                <div class="toolbar d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="filter-form">
+                        <form method="get" class="d-flex flex-wrap gap-2">
+                            <div class="filter-group">
+                                <label class="filter-label">Sort By:</label>
+                                <select name="sort" class="sort-select" onchange="this.form.submit()">
+                                    <option value="username" {% if sort_by == 'username' %}selected{% endif %}>Username</option>
+                                    <option value="-date_joined" {% if sort_by == '-date_joined' %}selected{% endif %}>Newest First</option>
+                                    <option value="date_joined" {% if sort_by == 'date_joined' %}selected{% endif %}>Oldest First</option>
+                                    <option value="-last_login" {% if sort_by == '-last_login' %}selected{% endif %}>Recent Login</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group ms-md-3">
+                                <label class="filter-label">Role:</label>
+                                <select name="role" class="filter-select" onchange="this.form.submit()">
+                                    <option value="">All Roles</option>
+                                    <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>Staff</option>
+                                    <option value="customer" {% if role_filter == 'customer' %}selected{% endif %}>Customer</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group ms-md-3">
+                                <label class="filter-label">Status:</label>
+                                <select name="status" class="filter-select" onchange="this.form.submit()">
+                                    <option value="">All Status</option>
+                                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="mt-3 mt-md-0">
+                        <strong>{{ page_obj.paginator.count }}</strong> users found
+                    </div>
+                </div>
+                
+                <!-- Users Table -->
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Last Login</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in page_obj %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if user.userprofile.avatar %}
+                                            <img src="{{ user.userprofile.avatar.url }}" alt="Avatar" class="user-avatar me-2">
+                                        {% else %}
+                                            <div class="avatar-placeholder me-2">
+                                                {{ user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <div>{{ user.username }}</div>
+                                            <small class="text-muted">
+                                                {% if user.first_name or user.last_name %}
+                                                    {{ user.first_name }} {{ user.last_name }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_superuser %}
+                                        <span class="badge-role badge-admin">Admin</span>
+                                    {% elif user.is_staff %}
+                                        <span class="badge-role badge-staff">Staff</span>
+                                    {% else %}
+                                        <span class="badge-role badge-customer">Customer</span>
+                                    {% endif %}
+                                </td>
+                                <td class="user-time">{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td class="user-time">
+                                    {% if user.last_login %}
+                                        {{ user.last_login|date:"M d, Y" }}
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}"></span>
+                                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown user-actions-dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            {% if not user.is_superuser %}
+                                                <li>
+                                                    <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#updateStatus{{ user.id }}">
+                                                        <i class="fas fa-edit me-2"></i> Update Status
+                                                    </button>
+                                                </li>
+                                            {% endif %}
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'admin:auth_user_change' user.id %}" target="_blank">
+                                                    <i class="fas fa-user-edit me-2"></i> Edit in Django Admin
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'profile' %}?user={{ user.id }}" target="_blank">
+                                                    <i class="fas fa-eye me-2"></i> View Profile
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Update Status Modal -->
+                                    {% if not user.is_superuser %}
+                                    <div class="modal fade" id="updateStatus{{ user.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Update User Status</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form method="POST">
+                                                    <div class="modal-body">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Username</label>
+                                                            <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email</label>
+                                                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Current Status</label>
+                                                            <div>
+                                                                <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}"></span>
+                                                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input" type="checkbox" id="activeStatus{{ user.id }}" name="is_active" {% if user.is_active %}checked{% endif %}>
+                                                                <label class="form-check-label" for="activeStatus{{ user.id }}">Active</label>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {% if request.user.is_superuser %}
+                                                        <div class="mb-3">
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input" type="checkbox" id="staffStatus{{ user.id }}" name="is_staff" {% if user.is_staff %}checked{% endif %}>
+                                                                <label class="form-check-label" for="staffStatus{{ user.id }}">Staff Status</label>
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" name="update_user" class="btn btn-primary">Update Status</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="my-4">
+                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                        <p class="mb-0">No users found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

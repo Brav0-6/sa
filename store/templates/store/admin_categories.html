@@ -1,0 +1,457 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Admin Categories - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        margin-top: 2rem;
+        margin-bottom: 4rem;
+    }
+    
+    .admin-sidebar {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+    }
+    
+    .admin-sidebar .nav-link {
+        color: #666;
+        padding: 0.5rem 0.8rem;
+        border-radius: 5px;
+        margin-bottom: 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-sidebar .nav-link:hover {
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+        color: var(--primary-color);
+    }
+    
+    .admin-sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .admin-sidebar .nav-link i {
+        width: 22px;
+    }
+    
+    .admin-content {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+    
+    .summary-card {
+        padding: 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-card.primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .summary-card.secondary {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    
+    .summary-card.success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .summary-card.warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .summary-card-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+    }
+    
+    .summary-card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .add-category-form, .category-card {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-card {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .category-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .category-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+    
+    .category-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .category-description {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.75rem;
+    }
+    
+    .category-meta {
+        font-size: 0.8rem;
+        color: #777;
+    }
+    
+    .category-meta i {
+        margin-right: 0.3rem;
+    }
+    
+    .upload-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 5px;
+        background-color: #f0f0f0;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .upload-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .featured-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.1rem 0.5rem;
+        border-radius: 10px;
+        margin-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="admin-sidebar">
+                <h5 class="mb-3">Admin Dashboard</h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_products' %}">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                    <a class="nav-link active" href="{% url 'admin_categories' %}">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                    <a class="nav-link" href="/admin/store/order/">
+                        <i class="fas fa-shopping-cart"></i> Orders
+                    </a>
+                    <a class="nav-link" href="/admin/auth/user/">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="admin-content">
+                <h2 class="page-title">
+                    <i class="fas fa-tags me-2"></i> Categories Management
+                </h2>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="summary-card primary">
+                            <h6 class="summary-card-title">Total Categories</h6>
+                            <p class="summary-card-value">{{ total_categories }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add Category Form -->
+                <div class="add-category-form mb-4">
+                    <h3 class="h5 mb-3">Add New Category</h3>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Category Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="is_featured" name="is_featured">
+                                    <label class="form-check-label" for="is_featured">Featured Category</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Category Image</label>
+                                    <input type="file" class="form-control" id="image" name="image" accept="image/*" onchange="previewImage(this)">
+                                    
+                                    <div class="upload-preview mt-2" id="imagePreview">
+                                        <i class="fas fa-image text-muted fa-2x"></i>
+                                    </div>
+                                    <small class="text-muted">Recommended size: 500×500 pixels</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" name="add_category" class="btn btn-success">
+                                <i class="fas fa-plus-circle"></i> Add Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Categories List -->
+                <h3 class="h5 mb-3">All Categories</h3>
+                <div class="row">
+                    {% for category in categories %}
+                    <div class="col-md-6 mb-3">
+                        <div class="category-card">
+                            <div class="category-actions dropdown">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#editCategory{{ category.id }}">
+                                            <i class="fas fa-edit me-2"></i> Edit
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#deleteCategory{{ category.id }}">
+                                            <i class="fas fa-trash-alt me-2"></i> Delete
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    {% if category.image %}
+                                        <img src="{{ category.image.url }}" class="category-image" alt="{{ category.name }}">
+                                    {% else %}
+                                        <div class="category-image d-flex align-items-center justify-content-center bg-light">
+                                            <i class="fas fa-tag fa-2x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-8">
+                                    <h4 class="category-name">
+                                        {{ category.name }}
+                                        {% if category.is_featured %}
+                                            <span class="featured-badge">Featured</span>
+                                        {% endif %}
+                                    </h4>
+                                    <p class="category-description">
+                                        {% if category.description %}
+                                            {{ category.description|truncatechars:70 }}
+                                        {% else %}
+                                            <span class="text-muted fst-italic">No description</span>
+                                        {% endif %}
+                                    </p>
+                                    <div class="category-meta">
+                                        <span><i class="fas fa-box"></i> {{ category.products_count }} products</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Edit Category Modal -->
+                        <div class="modal fade" id="editCategory{{ category.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Category: {{ category.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="POST" enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="category_id" value="{{ category.id }}">
+                                            
+                                            <div class="mb-3">
+                                                <label for="edit_name{{ category.id }}" class="form-label">Category Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="edit_name{{ category.id }}" name="name" value="{{ category.name }}" required>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="edit_description{{ category.id }}" class="form-label">Description</label>
+                                                <textarea class="form-control" id="edit_description{{ category.id }}" name="description" rows="3">{{ category.description }}</textarea>
+                                            </div>
+                                            
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" id="edit_is_featured{{ category.id }}" name="is_featured" {% if category.is_featured %}checked{% endif %}>
+                                                <label class="form-check-label" for="edit_is_featured{{ category.id }}">Featured Category</label>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="edit_image{{ category.id }}" class="form-label">Category Image</label>
+                                                <input type="file" class="form-control" id="edit_image{{ category.id }}" name="image" accept="image/*" onchange="previewEditImage(this, {{ category.id }})">
+                                                
+                                                <div class="upload-preview mt-2" id="editImagePreview{{ category.id }}">
+                                                    {% if category.image %}
+                                                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                                                    {% else %}
+                                                        <i class="fas fa-image text-muted fa-2x"></i>
+                                                    {% endif %}
+                                                </div>
+                                                <small class="text-muted">Recommended size: 500×500 pixels</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" name="edit_category" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delete Category Modal -->
+                        <div class="modal fade" id="deleteCategory{{ category.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Delete Category</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete the category <strong>{{ category.name }}</strong>?</p>
+                                        
+                                        {% if category.products_count > 0 %}
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                This category has {{ category.products_count }} associated products. You cannot delete it until you reassign or delete these products.
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-danger">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                This action cannot be undone.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        
+                                        {% if category.products_count == 0 %}
+                                            <form method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="category_id" value="{{ category.id }}">
+                                                <button type="submit" name="delete_category" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        {% else %}
+                                            <button type="button" class="btn btn-danger" disabled>Delete</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No categories found. Add your first category using the form above.
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Category Image Preview">`;
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.innerHTML = `<i class="fas fa-image text-muted fa-2x"></i>`;
+        }
+    }
+    
+    function previewEditImage(input, categoryId) {
+        const preview = document.getElementById(`editImagePreview${categoryId}`);
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Category Image Preview">`;
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %} 

@@ -1,0 +1,496 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Admin Dashboard - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2c2c2c 100%);
+        color: white;
+        border-radius: 0;
+        padding: 3rem;
+        margin-bottom: 2.5rem;
+        box-shadow: var(--box-shadow);
+    }
+    
+    .stat-card {
+        border: none;
+        border-radius: 0;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        background-color: rgba(156, 140, 108, 0.1);
+    }
+    
+    .stat-purple .stat-icon {
+        background-color: rgba(26, 26, 26, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .stat-green .stat-icon {
+        background-color: rgba(156, 140, 108, 0.1);
+        color: var(--secondary-color);
+    }
+    
+    .stat-yellow .stat-icon {
+        background-color: rgba(212, 200, 168, 0.1);
+        color: var(--accent-color);
+    }
+    
+    .stat-red .stat-icon {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+    }
+    
+    .action-card {
+        background-color: var(--light-bg);
+        border-radius: 0;
+        transition: transform 0.3s ease;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    }
+    
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+    
+    .data-card {
+        border: none;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .data-card .card-header {
+        padding: 1.5rem;
+        font-weight: 400;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        background-color: var(--light-bg);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .quick-action-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 0;
+        font-weight: 400;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .dashboard-nav {
+        margin-bottom: 3rem;
+    }
+    
+    .dashboard-nav .nav-link {
+        border-radius: 0;
+        padding: 1rem 1.5rem;
+        font-weight: 400;
+        color: var(--text-color);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+    
+    .dashboard-nav .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .dashboard-nav .nav-link:hover:not(.active) {
+        background-color: var(--light-bg);
+    }
+    
+    .badge {
+        padding: 0.5em 0.85em;
+        font-weight: 400;
+        border-radius: 0;
+        letter-spacing: 1px;
+    }
+    
+    .progress {
+        height: 6px;
+        border-radius: 0;
+        background-color: #e9ecef;
+    }
+    
+    .table th {
+        font-weight: 500;
+        color: var(--primary-color);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        padding: 15px 10px;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 15px 10px;
+    }
+    
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+    }
+    
+    .admin-sidebar {
+        background-color: var(--light-bg);
+        padding: 2rem;
+        border-radius: 0;
+        height: 100%;
+    }
+    
+    .admin-sidebar .nav-link {
+        color: var(--text-color);
+        padding: 0.8rem 1rem;
+        border-radius: 0;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+    
+    .admin-sidebar .nav-link:hover {
+        background-color: rgba(156, 140, 108, 0.1);
+        color: var(--secondary-color);
+    }
+    
+    .admin-sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .admin-sidebar .nav-link i {
+        width: 24px;
+        margin-right: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            {% include 'store/admin_sidebar.html' with active_page='dashboard' %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h1 class="display-5 fw-light mb-2" style="letter-spacing: 2px;">Dashboard</h1>
+                        <p class="mb-0" style="opacity: 0.8;">Welcome back, {{ request.user.first_name|default:request.user.username }}. Here's your store overview.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0" style="opacity: 0.8;">Today's Date: {% now "F d, Y" %}</p>
+                        <p class="mb-0" style="opacity: 0.8;">Last Login: {{ request.user.last_login|date:"F d, Y H:i" }}</p>
+            </div>
+        </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-5">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card h-100 stat-purple">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <div class="stat-icon">
+                                    <i class="fas fa-tshirt fa-2x"></i>
+                                </div>
+                                <h6 class="text-uppercase mb-1" style="letter-spacing: 1.5px; font-weight: 400; font-size: 0.85rem;">Total Products</h6>
+                                <h2 class="display-4 fw-light mt-2 mb-0">{{ total_products }}</h2>
+                                <div class="mt-3 w-100">
+                                    <div class="d-flex justify-content-between">
+                                        <small style="opacity: 0.7;">Target: 100</small>
+                                        <small style="opacity: 0.7;">{{ total_products }}%</small>
+                                    </div>
+                                    <div class="progress mt-1">
+                                        <div class="progress-bar bg-dark" role="progressbar" style="width: {{ total_products }}%" aria-valuenow="{{ total_products }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card h-100 stat-green">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                                <h6 class="text-uppercase mb-1" style="letter-spacing: 1.5px; font-weight: 400; font-size: 0.85rem;">Total Users</h6>
+                                <h2 class="display-4 fw-light mt-2 mb-0">{{ total_users }}</h2>
+                                <div class="mt-3">
+                                    <a href="{% url 'admin_users' %}" class="btn btn-sm btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem; padding: 0.5rem 1rem;">View All Users</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card h-100 stat-yellow">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <div class="stat-icon">
+                                    <i class="fas fa-shopping-bag fa-2x"></i>
+                                </div>
+                                <h6 class="text-uppercase mb-1" style="letter-spacing: 1.5px; font-weight: 400; font-size: 0.85rem;">Total Orders</h6>
+                                <h2 class="display-4 fw-light mt-2 mb-0">{{ total_orders }}</h2>
+                                <div class="mt-3">
+                                    <a href="{% url 'admin_orders' %}" class="btn btn-sm btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem; padding: 0.5rem 1rem;">View All Orders</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card h-100 stat-red">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <div class="stat-icon">
+                                    <i class="fas fa-rupee-sign fa-2x"></i>
+                                </div>
+                                <h6 class="text-uppercase mb-1" style="letter-spacing: 1.5px; font-weight: 400; font-size: 0.85rem;">Total Revenue</h6>
+                                <h2 class="display-4 fw-light mt-2 mb-0">₹{{ revenue }}</h2>
+                                <div class="mt-3">
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-arrow-up me-1"></i>32% This Month
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+        </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mb-5">
+                <div class="col-md-12">
+                    <h5 class="mb-4" style="font-weight: 300; letter-spacing: 2px; text-transform: uppercase;"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card action-card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-plus-circle fa-3x" style="color: var(--primary-color);"></i>
+                            </div>
+                            <h5 style="font-weight: 400; letter-spacing: 1px;">Add Product</h5>
+                            <p class="small text-muted mb-4">Add new products to your inventory</p>
+                            <a href="{% url 'add_product' %}" class="btn btn-dark text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Add New</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card action-card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-user-plus fa-3x" style="color: var(--secondary-color);"></i>
+                            </div>
+                            <h5 style="font-weight: 400; letter-spacing: 1px;">Add User</h5>
+                            <p class="small text-muted mb-4">Create new user accounts</p>
+                            <a href="/admin/auth/user/add/" class="btn btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Add User</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card action-card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-tag fa-3x" style="color: var(--accent-color);"></i>
+                            </div>
+                            <h5 style="font-weight: 400; letter-spacing: 1px;">Add Category</h5>
+                            <p class="small text-muted mb-4">Create new product categories</p>
+                            <a href="{% url 'admin_categories' %}" class="btn btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Add Category</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card action-card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-cogs fa-3x text-secondary"></i>
+                            </div>
+                            <h5 style="font-weight: 400; letter-spacing: 1px;">Site Settings</h5>
+                            <p class="small text-muted mb-4">Configure your store settings</p>
+                            <a href="/admin/" class="btn btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Go to Admin</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Quick Actions Row -->
+            <div class="row mb-5">
+                <div class="col-md-3 mb-4">
+                    <div class="card action-card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-star fa-3x" style="color: #FFD700;"></i>
+                            </div>
+                            <h5 style="font-weight: 400; letter-spacing: 1px;">Manage Reviews</h5>
+                            <p class="small text-muted mb-4">View and moderate customer reviews</p>
+                            <a href="{% url 'admin_reviews' %}" class="btn btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">View Reviews</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card action-card h-100">
+                        <div class="card-body text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-shipping-fast fa-3x" style="color: #4CAF50;"></i>
+                            </div>
+                            <h5 style="font-weight: 400; letter-spacing: 1px;">Shipping Settings</h5>
+                            <p class="small text-muted mb-4">Configure shipping rates and options</p>
+                            <a href="{% url 'admin_shipping_config' %}" class="btn btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem;">Manage Shipping</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6"></div>
+            </div>
+
+            <!-- Dashboard Data -->
+            <div class="row">
+                <!-- Recent Orders -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card data-card h-100">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-uppercase" style="font-weight: 400; font-size: 0.95rem; letter-spacing: 1.5px;"><i class="fas fa-shopping-cart me-2" style="color: var(--secondary-color);"></i>Recent Orders</h5>
+                            <a href="{% url 'admin_orders' %}" class="btn btn-sm btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem; padding: 0.5rem 1rem;">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Order ID</th>
+                                            <th scope="col">Customer</th>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in recent_orders %}
+                                        <tr>
+                                            <th scope="row">#{{ order.id }}</th>
+                                            <td>{{ order.full_name }}</td>
+                                            <td>{{ order.order_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>₹{{ order.total_amount }}</td>
+                                            <td>
+                                                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-secondary" style="border-radius: 0;">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                                                <p>No orders available</p>
+                                            </td>
+                                        </tr>
+                {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column Cards -->
+                <div class="col-lg-5">
+                    <!-- Low Stock Products -->
+                    <div class="card data-card mb-4">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-uppercase" style="font-weight: 400; font-size: 0.95rem; letter-spacing: 1.5px;"><i class="fas fa-exclamation-triangle me-2" style="color: var(--secondary-color);"></i>Low Stock Products</h5>
+                            <a href="{% url 'admin_products' %}" class="btn btn-sm btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem; padding: 0.5rem 1rem;">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for product in low_stock_products %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-bottom py-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-light text-dark me-2">{{ product.stock }}</span>
+                                        <span>{{ product.name }}</span>
+        </div>
+                                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-outline-dark" style="border-radius: 0;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item text-center py-4">
+                                    <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                                    <p>All products have sufficient stock</p>
+                                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+                    <!-- Latest Users -->
+                    <div class="card data-card mb-4">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-uppercase" style="font-weight: 400; font-size: 0.95rem; letter-spacing: 1.5px;"><i class="fas fa-user-plus me-2" style="color: var(--secondary-color);"></i>Latest Users</h5>
+                            <a href="{% url 'admin_users' %}" class="btn btn-sm btn-outline-secondary text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem; padding: 0.5rem 1rem;">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                {% for user in latest_users %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-bottom py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3 bg-light text-dark">
+                                            {{ user.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="d-block" style="font-weight: 500;">{{ user.username }}</span>
+                                            <small class="text-muted">{{ user.email }}</small>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">{{ user.date_joined|date:"M d" }}</small>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item text-center py-4">
+                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                    <p>No users registered yet</p>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

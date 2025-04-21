@@ -1,0 +1,248 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}{{ rate|yesno:"Edit,Add" }} Shipping Rate - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Admin Sidebar -->
+            <div class="admin-sidebar card mb-4">
+                <div class="card-body">
+                    <h5 class="sidebar-title">Admin Panel</h5>
+                    <ul class="list-unstyled admin-nav">
+                        <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                        <li><a href="{% url 'admin_products' %}"><i class="fas fa-box me-2"></i>Products</a></li>
+                        <li><a href="{% url 'admin_categories' %}"><i class="fas fa-tags me-2"></i>Categories</a></li>
+                        <li><a href="{% url 'admin_orders' %}"><i class="fas fa-shopping-bag me-2"></i>Orders</a></li>
+                        <li><a href="{% url 'admin_users' %}"><i class="fas fa-users me-2"></i>Users</a></li>
+                        <li><a href="{% url 'admin_messages' %}"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                        <li class="active"><a href="{% url 'admin_shipping_config' %}"><i class="fas fa-truck me-2"></i>Shipping</a></li>
+                        <li><a href="{% url 'home' %}"><i class="fas fa-home me-2"></i>Back to Home</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Shipping Rate Form Card -->
+            <div class="admin-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ rate|yesno:"Edit,Add" }} Shipping Rate</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ rate.id|yesno:rate.get_absolute_url,'' }}">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Rate Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ rate.name|default:'' }}" required>
+                                <div class="form-text">A descriptive name for this shipping rate (e.g. "Mumbai Local", "Standard Nationwide").</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="rate_type" class="form-label">Rate Type</label>
+                                <select class="form-select" id="rate_type" name="rate_type" required>
+                                    <option value="nationwide" {% if rate.rate_type == 'nationwide' %}selected{% endif %}>Nationwide</option>
+                                    <option value="pincode_range" {% if rate.rate_type == 'pincode_range' %}selected{% endif %}>Pincode Range</option>
+                                    <option value="state" {% if rate.rate_type == 'state' %}selected{% endif %}>State</option>
+                                    <option value="city" {% if rate.rate_type == 'city' %}selected{% endif %}>City</option>
+                                </select>
+                                <div class="form-text">The type of location this rate applies to.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location Fields - shown/hidden based on rate type -->
+                        <div class="location-fields mb-3">
+                            <!-- Pincode Range Fields -->
+                            <div class="pincode-range-fields {{ rate.rate_type|yesno:'d-block,d-none' }} row" data-rate-type="pincode_range">
+                                <div class="col-md-6 mb-3">
+                                    <label for="pincode_from" class="form-label">Pincode From</label>
+                                    <input type="text" class="form-control" id="pincode_from" name="pincode_from" value="{{ rate.pincode_from|default:'' }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="pincode_to" class="form-label">Pincode To</label>
+                                    <input type="text" class="form-control" id="pincode_to" name="pincode_to" value="{{ rate.pincode_to|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <!-- State Field -->
+                            <div class="state-field {{ rate.rate_type|yesno:'d-block,d-none' }}" data-rate-type="state">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" name="state" value="{{ rate.state|default:'' }}">
+                            </div>
+                            
+                            <!-- City Fields -->
+                            <div class="city-fields {{ rate.rate_type|yesno:'d-block,d-none' }} row" data-rate-type="city">
+                                <div class="col-md-6 mb-3">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" class="form-control" id="city" name="city" value="{{ rate.city|default:'' }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="state_city" class="form-label">State</label>
+                                    <input type="text" class="form-control" id="state_city" name="state" value="{{ rate.state|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cost" class="form-label">Shipping Cost (₹)</label>
+                                <input type="number" class="form-control" id="cost" name="cost" value="{{ rate.cost|default:'0' }}" min="0" step="0.01">
+                                <div class="form-text">The shipping cost for this rate.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="min_order_amount" class="form-label">Minimum Order Amount (₹)</label>
+                                <input type="number" class="form-control" id="min_order_amount" name="min_order_amount" value="{{ rate.min_order_amount|default:'0' }}" min="0" step="0.01">
+                                <div class="form-text">Minimum order amount for this rate to apply.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_free" name="is_free" {% if rate.is_free %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_free">Free Shipping</label>
+                                </div>
+                                <div class="form-text">If enabled, shipping will be free regardless of the shipping cost.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if rate.is_active|default:True %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_active">Active</label>
+                                </div>
+                                <div class="form-text">If enabled, this shipping rate will be available for customers.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 d-flex justify-content-between">
+                            <a href="{% url 'admin_shipping_config' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> {{ rate|yesno:"Update,Save" }} Rate
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-sidebar {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        color: #333;
+    }
+    
+    .admin-nav li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .admin-nav li a {
+        color: #666;
+        text-decoration: none;
+        display: block;
+        padding: 8px 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-nav li a:hover, .admin-nav li.active a {
+        background-color: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+    }
+    
+    .admin-card {
+        border: none;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        border-radius: 8px;
+    }
+    
+    .admin-card .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #ff6b6b;
+        border-color: #ff6b6b;
+    }
+    
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(255, 107, 107, 0.25);
+        border-color: #ff6b6b;
+    }
+    
+    .city-fields, .pincode-range-fields, .state-field {
+        display: none;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to toggle location fields based on rate type
+        const rateTypeSelect = document.getElementById('rate_type');
+        const locationFields = document.querySelectorAll('.location-fields > div');
+        
+        function toggleLocationFields() {
+            const selectedType = rateTypeSelect.value;
+            
+            // Hide all location fields
+            locationFields.forEach(field => {
+                field.style.display = 'none';
+            });
+            
+            // Show fields for selected type
+            const selectedFields = document.querySelector(`[data-rate-type="${selectedType}"]`);
+            if (selectedFields) {
+                selectedFields.style.display = 'block';
+                
+                // If it has class row, make children visible
+                if (selectedFields.classList.contains('row')) {
+                    Array.from(selectedFields.children).forEach(child => {
+                        child.style.display = 'block';
+                    });
+                }
+            }
+        }
+        
+        // Initialize fields on page load
+        toggleLocationFields();
+        
+        // Add event listener for rate type change
+        rateTypeSelect.addEventListener('change', toggleLocationFields);
+        
+        // Disable cost input when free shipping is checked
+        const isFreeCheckbox = document.getElementById('is_free');
+        const costInput = document.getElementById('cost');
+        
+        function toggleCostInput() {
+            costInput.disabled = isFreeCheckbox.checked;
+            if (isFreeCheckbox.checked) {
+                costInput.value = '0';
+            }
+        }
+        
+        // Initialize cost input on page load
+        toggleCostInput();
+        
+        // Add event listener for is_free checkbox change
+        isFreeCheckbox.addEventListener('change', toggleCostInput);
+    });
+</script>
+{% endblock %} 

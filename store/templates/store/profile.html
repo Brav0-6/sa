@@ -1,0 +1,387 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Your Profile - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="profile-picture-container mb-3">
+                        {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" class="rounded-circle profile-picture" alt="{{ user.username }}">
+                        {% else %}
+                            <div class="default-profile-picture">
+                                <i class="fas fa-user fa-2x"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted small">Member since {{ user.date_joined|date:"F Y" }}</p>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm mt-2 w-100">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#account-info" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="fas fa-user-circle me-2"></i>Account Info
+                    </a>
+                    <a href="#orders" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-shopping-bag me-2"></i>My Orders
+                        <span class="badge bg-primary rounded-pill float-end">{{ orders.count }}</span>
+                    </a>
+                    <a href="#messages" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-envelope me-2"></i>My Messages
+                        <span class="badge bg-primary rounded-pill float-end">{{ user_messages.count }}</span>
+                    </a>
+                    <a href="#wishlist" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="far fa-heart me-2"></i>My Wishlist
+                        <span class="badge bg-primary rounded-pill float-end">{{ wishlist_items.count }}</span>
+                    </a>
+                    <a href="{% url 'view_cart' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-cart me-2"></i>My Cart
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Account Info Tab -->
+                <div class="tab-pane fade show active" id="account-info">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Account Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted">Name</label>
+                                    <p class="fw-medium">{{ user.get_full_name|default:"Not provided" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted">Username</label>
+                                    <p class="fw-medium">{{ user.username }}</p>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted">Email Address</label>
+                                    <p class="fw-medium">{{ user.email|default:"Not provided" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted">Phone Number</label>
+                                    <p class="fw-medium">{{ profile.phone|default:"Not provided" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Shipping Address</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if profile.address or profile.city or profile.state %}
+                            <address>
+                                {{ profile.address }}<br>
+                                {{ profile.city }}{% if profile.city and profile.state %}, {% endif %}{{ profile.state }} {{ profile.pincode }}
+                            </address>
+                            {% else %}
+                            <p class="text-muted">No shipping address provided yet.</p>
+                            {% endif %}
+                            <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit me-2"></i>Update Address
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders Tab -->
+                <div class="tab-pane fade" id="orders">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">My Orders</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Total</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in orders %}
+                                        <tr>
+                                            <td>#{{ order.id }}</td>
+                                            <td>{{ order.order_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ order.status|lower|first }}">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>₹{{ order.total_amount }}</td>
+                                            <td>
+                                                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-shopping-bag fa-3x text-muted"></i>
+                                </div>
+                                <h5>No orders yet</h5>
+                                <p class="text-muted">You haven't placed any orders yet.</p>
+                                <a href="{% url 'home' %}" class="btn btn-primary">Start Shopping</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages Tab -->
+                <div class="tab-pane fade" id="messages">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">My Messages</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if user_messages %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Subject</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for message in user_messages %}
+                                        <tr>
+                                            <td>{{ message.subject|default:"(No Subject)" }}</td>
+                                            <td>{{ message.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if message.status == 'unread' %}bg-secondary
+                                                    {% elif message.status == 'read' %}bg-info
+                                                    {% elif message.status == 'replied' %}bg-success
+                                                    {% else %}bg-light text-dark{% endif %}">
+                                                    {{ message.status|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#messageModal{{ message.id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Message Modal -->
+                                        <div class="modal fade" id="messageModal{{ message.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">{{ message.subject|default:"(No Subject)" }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="message-info mb-3">
+                                                            <div class="d-flex justify-content-between">
+                                                                <p class="mb-1"><strong>Date:</strong> {{ message.created_at|date:"F d, Y, g:i a" }}</p>
+                                                                <p class="mb-1">
+                                                                    <span class="badge 
+                                                                        {% if message.status == 'unread' %}bg-secondary
+                                                                        {% elif message.status == 'read' %}bg-info
+                                                                        {% elif message.status == 'replied' %}bg-success
+                                                                        {% else %}bg-light text-dark{% endif %}">
+                                                                        {{ message.status|title }}
+                                                                    </span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="message-content mb-4">
+                                                            <h6>Your Message:</h6>
+                                                            <div class="message-text p-3 mb-4">
+                                                                {{ message.message|linebreaks }}
+                                                            </div>
+                                                            
+                                                            {% if message.admin_notes %}
+                                                            <h6>Admin Response:</h6>
+                                                            <div class="admin-reply p-3">
+                                                                {{ message.admin_notes|linebreaks }}
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <a href="{% url 'contact' %}" class="btn btn-primary">
+                                                            <i class="fas fa-reply me-2"></i>New Message
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-envelope fa-3x text-muted"></i>
+                                </div>
+                                <h5>No messages yet</h5>
+                                <p class="text-muted">You haven't sent any messages through our contact form yet.</p>
+                                <a href="{% url 'contact' %}" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Contact Us
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Wishlist Tab -->
+                <div class="tab-pane fade" id="wishlist">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">My Wishlist</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if wishlist_items %}
+                            <div class="row row-cols-1 row-cols-md-3 g-4">
+                                {% for item in wishlist_items %}
+                                <div class="col">
+                                    <div class="card h-100 position-relative">
+                                        <a href="{% url 'product_detail' item.product.id %}" class="stretched-link"></a>
+                                        {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" class="card-img-top wishlist-img" alt="{{ item.product.name }}">
+                                        {% else %}
+                                        <div class="card-img-top placeholder-img d-flex align-items-center justify-content-center bg-light">
+                                            <i class="fas fa-image fa-2x text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ item.product.name }}</h6>
+                                            <p class="text-primary">₹{{ item.product.get_current_price }}</p>
+                                        </div>
+                                        <div class="card-footer d-flex justify-content-between bg-white">
+                                            <form action="{% url 'add_to_cart' item.product.id %}" method="post" style="z-index: 100; position: relative;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-primary">Add to Cart</button>
+                                            </form>
+                                            <form action="{% url 'remove_from_wishlist' item.id %}" method="post" style="z-index: 100; position: relative;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="far fa-heart fa-3x text-muted"></i>
+                                </div>
+                                <h5>Your wishlist is empty</h5>
+                                <p class="text-muted">Save items you like to your wishlist and review them anytime.</p>
+                                <a href="{% url 'home' %}" class="btn btn-primary">Explore Products</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-picture-container {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    
+    .profile-picture {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .default-profile-picture {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+    }
+    
+    .wishlist-img {
+        height: 180px;
+        object-fit: cover;
+    }
+    
+    .placeholder-img {
+        height: 180px;
+    }
+    
+    .message-text {
+        white-space: pre-line;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .admin-reply {
+        background-color: #e7f3ff;
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    // Bootstrap tabs initialization (if needed)
+    document.addEventListener('DOMContentLoaded', function() {
+        // If URL includes a hash for a tab, activate that tab
+        if (window.location.hash) {
+            const tab = document.querySelector(`a[href="${window.location.hash}"]`);
+            if (tab) {
+                tab.click();
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

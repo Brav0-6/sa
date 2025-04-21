@@ -1,0 +1,67 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Confirm Delete Message - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card delete-confirmation-card">
+                <div class="card-body text-center py-5">
+                    <div class="delete-icon mb-4">
+                        <i class="fas fa-trash-alt fa-3x text-danger"></i>
+                    </div>
+                    <h2 class="card-title mb-4">Confirm Deletion</h2>
+                    <p class="mb-4">Are you sure you want to delete this message?</p>
+                    
+                    <div class="message-summary mb-4">
+                        <div class="message-subject">
+                            <strong>Subject:</strong> {{ message.subject }}
+                        </div>
+                        <div class="message-date">
+                            <strong>Date:</strong> {{ message.created_at|date:"F d, Y" }}
+                        </div>
+                        <div class="message-preview mt-2 p-3">
+                            {{ message.message|truncatechars:150 }}
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Yes, Delete Message</button>
+                            <a href="{% url 'my_messages' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .delete-confirmation-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .delete-icon {
+        color: #dc3545;
+    }
+    
+    .message-preview {
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        color: #666;
+        white-space: pre-line;
+        text-align: left;
+    }
+    
+    .action-buttons .btn {
+        padding: 10px 20px;
+        margin: 0 5px;
+    }
+</style>
+{% endblock %} 

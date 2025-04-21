@@ -1,0 +1,101 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Login - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="form-container shadow-sm p-4 p-md-5 rounded">
+            <h2 class="form-title text-center mb-4">Welcome Back</h2>
+            
+            {% if messages %}
+            <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+                {% for message in messages %}
+                {{ message }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.username.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="id_password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.password.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember-me">
+                        <label class="form-check-label" for="remember-me">Remember me</label>
+                    </div>
+                    <a href="#" class="text-decoration-none">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+                
+                <div class="text-center mt-4">
+                    <p>Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register</a></p>
+                </div>
+            </form>
+            
+            <div class="divider d-flex align-items-center my-4">
+                <span class="text-muted mx-3">Or Login With</span>
+            </div>
+            
+            <div class="social-login d-flex justify-content-center mb-4">
+                <a href="#" class="btn btn-outline-secondary me-2"><i class="fab fa-google"></i></a>
+                <a href="#" class="btn btn-outline-secondary me-2"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="btn btn-outline-secondary"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Add form-specific styles */
+    .form-container {
+        background-color: white;
+    }
+    
+    .form-control {
+        height: 50px;
+    }
+    
+    .input-group-text {
+        background-color: transparent;
+    }
+    
+    .divider {
+        position: relative;
+    }
+    
+    .divider::before, .divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}

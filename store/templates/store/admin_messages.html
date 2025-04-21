@@ -1,0 +1,489 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Admin Messages - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Admin Sidebar -->
+            <div class="admin-sidebar card mb-4">
+                <div class="card-body">
+                    <h5 class="sidebar-title">Admin Panel</h5>
+                    <ul class="list-unstyled admin-nav">
+                        <li><a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                        <li><a href="{% url 'admin_products' %}"><i class="fas fa-box me-2"></i>Products</a></li>
+                        <li><a href="{% url 'admin_categories' %}"><i class="fas fa-tags me-2"></i>Categories</a></li>
+                        <li><a href="{% url 'admin_orders' %}"><i class="fas fa-shopping-bag me-2"></i>Orders</a></li>
+                        <li><a href="{% url 'admin_users' %}"><i class="fas fa-users me-2"></i>Users</a></li>
+                        <li class="active"><a href="{% url 'admin_messages' %}"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                        <li><a href="{% url 'admin_shipping_config' %}"><i class="fas fa-truck me-2"></i>Shipping</a></li>
+                        <li><a href="{% url 'home' %}"><i class="fas fa-home me-2"></i>Back to Home</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Messages List Card -->
+            <div class="admin-card card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Customer Messages</h5>
+                    
+                    <!-- Status Filter -->
+                    <div class="filter-options">
+                        <form method="get" class="d-flex">
+                            <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                                <option value="all" {% if not status_filter %}selected{% endif %}>All Messages</option>
+                                <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>Unread</option>
+                                <option value="read" {% if status_filter == 'read' %}selected{% endif %}>Read</option>
+                                <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>Replied</option>
+                                <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>Archived</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stats-card-body">
+                                    <h6 class="stats-card-title">Total Messages</h6>
+                                    <h3 class="stats-card-value">{{ total_messages }}</h3>
+                                </div>
+                                <div class="stats-card-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stats-card-body">
+                                    <h6 class="stats-card-title">Unread</h6>
+                                    <h3 class="stats-card-value">{{ unread_count }}</h3>
+                                </div>
+                                <div class="stats-card-icon unread-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if page_obj %}
+                        <div class="table-responsive">
+                            <table class="table table-hover admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>From</th>
+                                        <th>Subject</th>
+                                        <th>Message</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for message in page_obj %}
+                                        <tr class="{% if message.status == 'unread' %}unread-row{% endif %}">
+                                            <td>
+                                                {{ message.name }}
+                                                {% if message.user %}
+                                                    <div><small class="text-muted">{{ message.user.username }}</small></div>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ message.subject|default:'(No Subject)' }}</td>
+                                            <td>{{ message.message|truncatechars:50 }}</td>
+                                            <td>{{ message.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge status-badge 
+                                                    {% if message.status == 'unread' %}bg-secondary
+                                                    {% elif message.status == 'read' %}bg-info
+                                                    {% elif message.status == 'replied' %}bg-success
+                                                    {% else %}bg-light text-dark{% endif %}">
+                                                    {{ message.status|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        data-bs-toggle="modal" data-bs-target="#viewMessageModal{{ message.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- View/Reply Message Modal -->
+                                        <div class="modal fade" id="viewMessageModal{{ message.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">{{ message.subject|default:'(No Subject)' }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="message-details mb-4">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <p><strong>From:</strong> {{ message.name }}</p>
+                                                                    <p><strong>Email:</strong> {{ message.email }}</p>
+                                                                    {% if message.phone %}
+                                                                        <p><strong>Phone:</strong> {{ message.phone }}</p>
+                                                                    {% endif %}
+                                                                </div>
+                                                                <div class="col-md-6 text-md-end">
+                                                                    <p><strong>Date:</strong> {{ message.created_at|date:"F d, Y, g:i a" }}</p>
+                                                                    <p>
+                                                                        <strong>Status:</strong> 
+                                                                        <span class="badge status-badge 
+                                                                            {% if message.status == 'unread' %}bg-secondary
+                                                                            {% elif message.status == 'read' %}bg-info
+                                                                            {% elif message.status == 'replied' %}bg-success
+                                                                            {% else %}bg-light text-dark{% endif %}">
+                                                                            {{ message.status|title }}
+                                                                        </span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="message-content mb-4">
+                                                            <h6>Message:</h6>
+                                                            <div class="message-text p-3">
+                                                                {{ message.message|linebreaks }}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <hr>
+                                                        
+                                                        <!-- Reply/Notes Form -->
+                                                        <form method="post" action="{% url 'update_message_status' message.id %}" class="reply-form">
+                                                            {% csrf_token %}
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Update Status:</label>
+                                                                <select name="status" class="form-select">
+                                                                    <option value="unread" {% if message.status == 'unread' %}selected{% endif %}>Unread</option>
+                                                                    <option value="read" {% if message.status == 'read' %}selected{% endif %}>Read</option>
+                                                                    <option value="replied" {% if message.status == 'replied' %}selected{% endif %}>Replied</option>
+                                                                    <option value="archived" {% if message.status == 'archived' %}selected{% endif %}>Archived</option>
+                                                                </select>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label for="admin_notes{{ message.id }}" class="form-label">Admin Response to Customer:</label>
+                                                                <textarea class="form-control" id="admin_notes{{ message.id }}" name="admin_notes" rows="5" placeholder="Enter your response to the customer...">{{ message.admin_notes }}</textarea>
+                                                                <div class="form-text">
+                                                                    <div class="alert alert-info mt-2 mb-0 p-2">
+                                                                        <i class="fas fa-info-circle me-2"></i>
+                                                                        This response will be visible to the customer in their profile's message section.
+                                                                        When you add a response, the message will be marked as "replied".
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="d-flex justify-content-between">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                <div>
+                                                                    {% if message.user %}
+                                                                        <a href="mailto:{{ message.email }}?subject=RE: {{ message.subject }}" class="btn btn-outline-primary me-2">
+                                                                            <i class="fas fa-envelope me-1"></i> Email Customer
+                                                                        </a>
+                                                                    {% endif %}
+                                                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                            <nav aria-label="Page navigation" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for i in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == i %}
+                                            <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state text-center py-5">
+                            <div class="empty-icon mb-4">
+                                <i class="fas fa-inbox fa-4x" style="color: #ddd;"></i>
+                            </div>
+                            <h5>No Messages Found</h5>
+                            <p class="text-muted">There are no messages in this category.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-sidebar {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        color: #333;
+    }
+    
+    .admin-nav li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .admin-nav li a {
+        color: #666;
+        text-decoration: none;
+        display: block;
+        padding: 8px 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-nav li a:hover, .admin-nav li.active a {
+        background-color: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+    }
+    
+    .admin-card {
+        border: none;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        border-radius: 8px;
+    }
+    
+    .admin-card .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+    
+    .stats-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-card-title {
+        color: #777;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-card-value {
+        color: #333;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .stats-card-icon {
+        background-color: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+        height: 48px;
+        width: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .stats-card-icon.unread-icon {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .admin-table thead th {
+        border-top: none;
+        color: #555;
+        font-weight: 600;
+        padding: 1rem;
+    }
+    
+    .unread-row {
+        font-weight: 500;
+        background-color: rgba(255, 193, 7, 0.05);
+    }
+    
+    .status-badge {
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .message-text {
+        white-space: pre-line;
+        color: #555;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+    
+    .pagination .page-link {
+        color: #ff6b6b;
+        padding: 0.5rem 0.75rem;
+        margin: 0 3px;
+        border-radius: 4px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #ff6b6b;
+        border-color: #ff6b6b;
+    }
+    
+    .pagination .page-link:focus {
+        box-shadow: 0 0 0 0.25rem rgba(255, 107, 107, 0.25);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to mark message as read when modal is opened
+        const messageModals = document.querySelectorAll('[id^="viewMessageModal"]');
+        
+        messageModals.forEach(modal => {
+            modal.addEventListener('shown.bs.modal', function() {
+                const statusSelect = this.querySelector('select[name="status"]');
+                const messageId = this.id.replace('viewMessageModal', '');
+                
+                // If message is unread, automatically change to read
+                if (statusSelect.value === 'unread') {
+                    statusSelect.value = 'read';
+                    
+                    // Send AJAX request to update status
+                    fetch(`/update-message-status/${messageId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            status: 'read',
+                            admin_notes: modal.querySelector('textarea[name="admin_notes"]').value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update UI to reflect read status
+                            const badgeInTable = document.querySelector(`#viewMessageModal${messageId}`).parentNode.querySelector('.status-badge');
+                            badgeInTable.textContent = 'Read';
+                            badgeInTable.classList.remove('bg-secondary');
+                            badgeInTable.classList.add('bg-info');
+                            
+                            // Remove unread-row class
+                            const tableRow = document.querySelector(`#viewMessageModal${messageId}`).parentNode.querySelector('tr');
+                            tableRow.classList.remove('unread-row');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+            
+            // Add listener for admin_notes textarea to update status preview
+            const adminNotesTextarea = modal.querySelector('textarea[name="admin_notes"]');
+            const statusSelect = modal.querySelector('select[name="status"]');
+            
+            if (adminNotesTextarea) {
+                adminNotesTextarea.addEventListener('input', function() {
+                    // If admin notes are filled in, show a preview status of 'replied'
+                    if (this.value.trim()) {
+                        // Show a visual indicator that the status will be set to replied
+                        const formText = modal.querySelector('.form-text .alert');
+                        formText.innerHTML = '<i class="fas fa-info-circle me-2"></i>' +
+                            'This response will be visible to the customer in their profile\'s message section. ' +
+                            '<strong>Adding a response will set the message status to "Replied".</strong>';
+                        formText.classList.remove('alert-info');
+                        formText.classList.add('alert-success');
+                    } else {
+                        // Restore original message
+                        const formText = modal.querySelector('.form-text .alert');
+                        formText.innerHTML = '<i class="fas fa-info-circle me-2"></i>' +
+                            'This response will be visible to the customer in their profile\'s message section. ' +
+                            'When you add a response, the message will be marked as "replied".';
+                        formText.classList.remove('alert-success');
+                        formText.classList.add('alert-info');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %} 

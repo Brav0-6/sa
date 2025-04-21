@@ -1,0 +1,309 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Home - DNK Saree Store{% endblock %}
+
+{% block full_width_content %}
+<!-- Hero Section -->
+<section class="hero-section" style="background-image: url('https://images.unsplash.com/photo-1618901185975-d59f7091bcfe?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2FyZWV8ZW58MHx8MHx8fDA%3D');">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Sarees That Speak<br>the Language of<br>Tradition</h1>
+            <p class="hero-subtitle">25% Off On All Products</p>
+            <div class="d-flex">
+                <a href="#featured-products" class="btn btn-primary me-3">SHOP NOW</a>
+                <a href="{% url 'search' %}" class="btn btn-outline-light">FIND MORE</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Brands Slider -->
+<div class="container py-5">
+    <div class="brands-slider text-center">
+        <div class="row align-items-center">
+            <div class="col">
+                <img src="https://via.placeholder.com/150x50?text=Brand+1" alt="Brand 1" class="img-fluid">
+            </div>
+            <div class="col">
+                <img src="https://via.placeholder.com/150x50?text=Brand+2" alt="Brand 2" class="img-fluid">
+            </div>
+            <div class="col">
+                <img src="https://via.placeholder.com/150x50?text=Brand+3" alt="Brand 3" class="img-fluid">
+            </div>
+            <div class="col">
+                <img src="https://via.placeholder.com/150x50?text=Brand+4" alt="Brand 4" class="img-fluid">
+            </div>
+            <div class="col">
+                <img src="https://via.placeholder.com/150x50?text=Brand+5" alt="Brand 5" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Categories -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center">Shop By Category</h2>
+        <div class="row">
+    {% for category in categories %}
+                <div class="col-md-4 mb-4">
+                    <div class="category-card">
+                {% if category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/600x400?text=Category" alt="{{ category.name }}">
+                {% endif %}
+                        <div class="category-overlay">
+                            <h4 class="category-title">{{ category.name }}</h4>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+                <div class="col-12 text-center">
+        <p>No categories available.</p>
+                </div>
+    {% endfor %}
+</div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section id="featured-products" class="py-5">
+    <div class="container">
+        <h2 class="section-title text-center">Featured Products</h2>
+        
+<div class="row">
+    {% for product in products %}
+            <div class="col-md-3 mb-4">
+                <div class="product-card">
+                    {% if product.on_sale %}
+                        <div class="sale-badge">Sale!</div>
+                    {% endif %}
+                    <a href="{% url 'product_detail' product.id %}" class="product-image-container">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top">
+                    </a>
+                <div class="card-body">
+                        <h5 class="product-title">{{ product.name }}</h5>
+                        <div class="product-brand">Women</div>
+                        
+                        <!-- Product Rating -->
+                        <div class="product-rating">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.average_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% elif forloop.counter <= product.average_rating|add:"0.5" %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Product Price -->
+                        <div class="product-price-container">
+                            {% if product.on_sale %}
+                                <span class="product-old-price">₹{{ product.price }}</span>
+                                <span class="product-price">₹{{ product.sale_price }}</span>
+                            {% else %}
+                                <span class="product-price">₹{{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-actions">
+                            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            <form action="{% url 'add_to_cart' product.id %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>No products to display.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Promotional Banner -->
+<section class="promotional-section py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Promotional Card 1 -->
+            <div class="col-md-4 mb-4">
+                <div class="promo-card position-relative">
+                    <img src="https://images.unsplash.com/photo-1641699862936-be9f49b1c38d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c2FyZWV8ZW58MHx8MHx8fDA%3D" alt="Woman in Orange Saree" class="img-fluid w-100">
+                    <div class="promo-content position-absolute bottom-0 left-0 p-4 text-white">
+                        <h3 class="fw-bold">20% Off On Tank Tops</h3>
+                        <p class="small mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac dictum.</p>
+                        <a href="#" class="btn btn-light btn-sm text-uppercase fw-bold px-4 py-2">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Promotional Card 2 -->
+            <div class="col-md-4 mb-4">
+                <div class="promo-card position-relative">
+                    <img src="https://subhamgrand.in/cdn/shop/files/4J9A6003copy.jpg?v=1713267500&width=600" alt="Woman in Pink Saree" class="img-fluid w-100">
+                    <div class="promo-content position-absolute bottom-0 left-0 p-4 text-white">
+                        <h3 class="fw-bold">Latest Eyewear For You</h3>
+                        <p class="small mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac dictum.</p>
+                        <a href="#" class="btn btn-light btn-sm text-uppercase fw-bold px-4 py-2">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Promotional Card 3 -->
+            <div class="col-md-4 mb-4">
+                <div class="promo-card position-relative">
+                    <img src="https://images.wholesalesalwar.com/2023y/May/40728/Yellow-Soft-Silk-Traditional-Wear-Weaving-Saree-NARAYANPATTU-4.jpg" alt="Woman in Blue Saree" class="img-fluid w-100">
+                    <div class="promo-content position-absolute bottom-0 left-0 p-4 text-white">
+                        <h3 class="fw-bold">Let's Lorem Suit Up!</h3>
+                        <p class="small mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac dictum.</p>
+                        <a href="#" class="btn btn-light btn-sm text-uppercase fw-bold px-4 py-2">Check Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .promo-card {
+        height: 450px;
+        overflow: hidden;
+        border-radius: 5px;
+    }
+    
+    .promo-card img {
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .promo-card:hover img {
+        transform: scale(1.05);
+    }
+    
+    .promo-content {
+        background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0) 100%);
+        width: 100%;
+        padding-top: 100px !important;
+    }
+    
+    .promo-content h3 {
+        font-size: 1.5rem;
+    }
+    
+    .promo-content .btn {
+        background-color: white;
+        color: #333;
+        border: none;
+        font-size: 0.8rem;
+    }
+    
+    .promo-content .btn:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h5 class="feature-title">Free Shipping</h5>
+                    <p class="feature-text">On orders over ₹500</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <h5 class="feature-title">Premium Quality</h5>
+                    <p class="feature-text">Authentic handcrafted sarees</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <h5 class="feature-title">Easy Returns</h5>
+                    <p class="feature-text">30-day return policy</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h5 class="feature-title">Secure Payments</h5>
+                    <p class="feature-text">100% secure payment methods</p>
+                </div>
+            </div>
+        </div>
+</div>
+</section>
+
+
+
+<style>
+    /* Additional styling for trending section */
+    #trending-products {
+        background-color: #f9f9f9;
+    }
+    
+    .trending-card {
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+    
+    .trending-carousel .carousel-item {
+        transition: transform 1.2s ease;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Original Featured Products Carousel
+        initCarousel('.products-carousel:not(.trending-carousel)');
+        
+        // Trending Products Carousel
+        initCarousel('.trending-carousel', 6000); // Different timing for variety
+        
+        function initCarousel(selector, interval = 5000) {
+            const carousel = document.querySelector(`${selector} .carousel-inner`);
+            const items = document.querySelectorAll(`${selector} .carousel-item`);
+            
+            if (!carousel || items.length <= 1) return;
+            
+            let currentIndex = 0;
+            
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % items.length;
+                carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+            }
+            
+            // Auto transition
+            setInterval(nextSlide, interval);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+{% endblock %}

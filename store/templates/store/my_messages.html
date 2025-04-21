@@ -1,0 +1,207 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}My Messages - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="section-title text-center mb-5">My Messages</h1>
+    
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Sidebar -->
+            <div class="profile-sidebar card mb-4">
+                <div class="card-body">
+                    <h5 class="sidebar-title">Account</h5>
+                    <ul class="list-unstyled profile-nav">
+                        <li><a href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+                        <li><a href="{% url 'edit_profile' %}"><i class="fas fa-edit me-2"></i>Edit Profile</a></li>
+                        <li class="active"><a href="{% url 'my_messages' %}"><i class="fas fa-envelope me-2"></i>My Messages</a></li>
+                        <li><a href="{% url 'wishlist' %}"><i class="far fa-heart me-2"></i>My Wishlist</a></li>
+                    </ul>
+                    
+                    <h5 class="sidebar-title mt-4">Orders</h5>
+                    <ul class="list-unstyled profile-nav">
+                        <li><a href="{% url 'profile' %}#orders"><i class="fas fa-box me-2"></i>Order History</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Messages List -->
+            <div class="messages-list card">
+                <div class="card-body">
+                    {% if user_messages %}
+                        <div class="table-responsive">
+                            <table class="table table-hover message-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Message</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for message in user_messages %}
+                                        <tr>
+                                            <td>{{ message.subject }}</td>
+                                            <td>{{ message.message|truncatechars:50 }}</td>
+                                            <td>{{ message.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge status-badge 
+                                                    {% if message.status == 'unread' %}bg-secondary
+                                                    {% elif message.status == 'read' %}bg-info
+                                                    {% elif message.status == 'replied' %}bg-success
+                                                    {% else %}bg-light text-dark{% endif %}">
+                                                    {{ message.status|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary view-message-btn" 
+                                                        data-bs-toggle="modal" data-bs-target="#viewMessageModal{{ message.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <a href="{% url 'delete_message' message.id %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- View Message Modal -->
+                                        <div class="modal fade" id="viewMessageModal{{ message.id }}" tabindex="-1" aria-labelledby="viewMessageModalLabel{{ message.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="viewMessageModalLabel{{ message.id }}">{{ message.subject }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="message-info mb-3">
+                                                            <p><strong>Date:</strong> {{ message.created_at|date:"F d, Y, g:i a" }}</p>
+                                                            <p><strong>Status:</strong> 
+                                                                <span class="badge status-badge 
+                                                                    {% if message.status == 'unread' %}bg-secondary
+                                                                    {% elif message.status == 'read' %}bg-info
+                                                                    {% elif message.status == 'replied' %}bg-success
+                                                                    {% else %}bg-light text-dark{% endif %}">
+                                                                    {{ message.status|title }}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        <div class="message-content">
+                                                            <h6>Message:</h6>
+                                                            <p class="message-text">{{ message.message }}</p>
+                                                        </div>
+                                                        
+                                                        {% if message.admin_notes %}
+                                                            <div class="admin-reply mt-4">
+                                                                <h6>Response from Admin:</h6>
+                                                                <div class="admin-notes">
+                                                                    {{ message.admin_notes|linebreaks }}
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <a href="{% url 'delete_message' message.id %}" class="btn btn-danger">
+                                                            Delete Message
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="empty-messages text-center py-5">
+                            <div class="empty-icon mb-4">
+                                <i class="far fa-envelope fa-4x" style="color: #ddd;"></i>
+                            </div>
+                            <h5>No Messages Yet</h5>
+                            <p class="text-muted">You haven't sent any messages through our contact form yet.</p>
+                            <a href="{% url 'contact' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-sidebar {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        color: #333;
+    }
+    
+    .profile-nav li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-nav li a {
+        color: #666;
+        text-decoration: none;
+        display: block;
+        padding: 8px 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-nav li a:hover, .profile-nav li.active a {
+        background-color: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+    }
+    
+    .messages-list {
+        border: none;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        border-radius: 8px;
+    }
+    
+    .message-table thead th {
+        border-top: none;
+        border-bottom: 2px solid #f5f5f5;
+        color: #555;
+        font-weight: 600;
+    }
+    
+    .status-badge {
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .message-text {
+        white-space: pre-line;
+        color: #555;
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    
+    .admin-notes {
+        background-color: #f0f8ff;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 3px solid #4a89dc;
+    }
+</style>
+{% endblock %} 

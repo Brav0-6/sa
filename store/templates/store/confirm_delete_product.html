@@ -1,0 +1,121 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Confirm Delete Product | Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .product-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 1.5rem;
+    }
+    
+    .product-details {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .product-info h5 {
+        margin-bottom: 0.25rem;
+        color: var(--primary-color);
+    }
+    
+    .delete-warning {
+        color: #dc3545;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+    }
+    
+    .delete-icon {
+        font-size: 3rem;
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home me-2"></i>Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_products' %}"><i class="fas fa-boxes me-2"></i>Products</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-trash-alt me-2"></i>Delete Product</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="delete-container">
+        <div class="text-center mb-4">
+            <div class="delete-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Confirm Delete</h3>
+            <p class="text-muted">You are about to delete this product. This action cannot be undone.</p>
+        </div>
+        
+        <div class="product-details">
+            {% if product.main_image %}
+                <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="product-image">
+            {% else %}
+                <div class="product-image d-flex align-items-center justify-content-center bg-light">
+                    <i class="fas fa-image text-muted"></i>
+                </div>
+            {% endif %}
+            
+            <div class="product-info">
+                <h5>{{ product.name }}</h5>
+                <p class="mb-1">Category: {{ product.category.name }}</p>
+                <p class="mb-0">
+                    {% if product.on_sale %}
+                        <span class="text-decoration-line-through text-muted">₹{{ product.price }}</span>
+                        <span class="text-danger ms-2">₹{{ product.sale_price }}</span>
+                    {% else %}
+                        ₹{{ product.price }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <p class="delete-warning"><i class="fas fa-exclamation-circle me-2"></i>Warning: This will also delete all images and data associated with this product!</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-1"></i> Delete Product
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

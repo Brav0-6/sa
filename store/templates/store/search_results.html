@@ -1,0 +1,597 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}{% if query %}Search Results for "{{ query }}"{% else %}All Products{% endif %} - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-results-container {
+        padding: 2rem 0;
+    }
+    
+    .search-header {
+        margin-bottom: 2rem;
+    }
+    
+    .search-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .search-count {
+        color: #777;
+        font-size: 1.1rem;
+    }
+    
+    .search-query {
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+        color: var(--primary-color);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    
+    .search-form {
+        display: flex;
+        margin-bottom: 2rem;
+    }
+    
+    .search-input {
+        flex-grow: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-right: none;
+        border-radius: 5px 0 0 5px;
+        font-size: 1rem;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25);
+    }
+    
+    .search-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0 1.5rem;
+        border-radius: 0 5px 5px 0;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .search-button:hover {
+        background-color: var(--secondary-color);
+    }
+    
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+    
+    .product-card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+    
+    .card-img-top {
+        height: 250px;
+        object-fit: cover;
+        transition: all 0.5s ease;
+    }
+    
+    .product-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .card-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .product-category {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+        border-radius: 20px;
+        color: var(--primary-color);
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .price-container {
+        margin: 0.75rem 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .regular-price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .old-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-right: 0.5rem;
+    }
+    
+    .sale-price {
+        color: #dc3545;
+        font-weight: 600;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .no-results-icon {
+        font-size: 3rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+    
+    .no-results-title {
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #555;
+    }
+    
+    .no-results-text {
+        color: #777;
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.2);
+    }
+    
+    /* Filter Styles */
+    .filter-container {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        color: #333;
+    }
+    
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .filter-group-title {
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #555;
+    }
+    
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .filter-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        background-color: #f0f0f0;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-badge:hover, .filter-badge.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .active-filters {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .active-filter-badge {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .active-filter-badge i {
+        margin-left: 0.5rem;
+        cursor: pointer;
+    }
+    
+    /* Stock & Discount Badges */
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #dc3545;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        z-index: 2;
+    }
+    
+    .stock-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        z-index: 2;
+    }
+    
+    .in-stock {
+        background-color: rgba(40, 167, 69, 0.85);
+        color: white;
+    }
+    
+    .low-stock {
+        background-color: rgba(255, 193, 7, 0.85);
+        color: #333;
+    }
+    
+    .out-of-stock {
+        background-color: rgba(220, 53, 69, 0.85);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container search-results-container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if query %}Search Results{% else %}All Products{% endif %}</li>
+        </ol>
+    </nav>
+
+    <div class="search-header">
+        <h1 class="search-title">
+            {% if query %}
+                Search Results for <span class="search-query">"{{ query }}"</span>
+            {% else %}
+                All Products
+            {% endif %}
+        </h1>
+        <p class="search-count">{{ products|length }} product{{ products|length|pluralize }} found</p>
+    </div>
+
+    <form action="{% url 'search' %}" method="get" class="search-form">
+        <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search for products...">
+        <button type="submit" class="search-button">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+    
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="filter-container">
+                <h3 class="filter-title">Filters</h3>
+                
+                <!-- Category Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-group-title">Categories</h4>
+                    <div class="filter-options" id="categoryFilters">
+                        {% for category in categories %}
+                        <div class="filter-badge" data-category="{{ category.id }}">{{ category.name }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Price Filter -->
+                <div class="filter-group">
+                    <h4 class="filter-group-title">Price Range</h4>
+                    <div class="filter-options" id="priceFilters">
+                        <div class="filter-badge" data-price="0-1000">Under ₹1,000</div>
+                        <div class="filter-badge" data-price="1000-2000">₹1,000 - ₹2,000</div>
+                        <div class="filter-badge" data-price="2000-5000">₹2,000 - ₹5,000</div>
+                        <div class="filter-badge" data-price="5000-10000">₹5,000 - ₹10,000</div>
+                        <div class="filter-badge" data-price="10000+">₹10,000+</div>
+                    </div>
+                </div>
+                
+                <!-- Clear Filters -->
+                <button class="btn btn-outline-secondary w-100 mt-3" id="clearFilters">Clear All Filters</button>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Active Filters Display -->
+            <div class="active-filters mb-4 d-none">
+                <p class="mb-2">Active Filters:</p>
+                <div id="activeFiltersList" class="d-flex flex-wrap gap-2">
+                    <!-- Active filters will be added here dynamically -->
+                </div>
+            </div>
+            
+            {% if products %}
+                <div class="products-grid">
+                    {% for product in products %}
+                        <div class="card product-card" 
+                             data-price="{{ product.sale_price|default:product.price }}" 
+                             data-category="{{ product.category.id }}">
+                            {% if product.discount_percentage > 0 %}
+                            <div class="discount-badge">{{ product.discount_percentage }}% OFF</div>
+                            {% endif %}
+                            
+                            {% if product.stock > 0 %}
+                                {% if product.stock <= 5 %}
+                                <div class="stock-badge low-stock">Low Stock</div>
+                                {% else %}
+                                <div class="stock-badge in-stock">In Stock</div>
+                                {% endif %}
+                            {% else %}
+                            <div class="stock-badge out-of-stock">Out of Stock</div>
+                            {% endif %}
+                            
+                            <a href="{% url 'product_detail' product.id %}">
+                                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            </a>
+                            <div class="card-body">
+                                <span class="product-category">{{ product.category.name }}</span>
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <div class="price-container">
+                                    {% if product.on_sale %}
+                                        <span class="old-price">₹{{ product.price }}</span>
+                                        <span class="sale-price">₹{{ product.sale_price }}</span>
+                                    {% else %}
+                                        <span class="regular-price">₹{{ product.price }}</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-primary w-100">View Details</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% if query %}
+                    <div class="no-results">
+                        <div class="no-results-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h2 class="no-results-title">No results found</h2>
+                        <p class="no-results-text">We couldn't find any products matching "<strong>{{ query }}</strong>".</p>
+                        <div>
+                            <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter functionality
+        const productCards = document.querySelectorAll('.product-card');
+        const categoryFilters = document.querySelectorAll('#categoryFilters .filter-badge');
+        const priceFilters = document.querySelectorAll('#priceFilters .filter-badge');
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        const productCountElement = document.querySelector('.search-count');
+        const activeFilters = document.querySelector('.active-filters');
+        const activeFiltersList = document.getElementById('activeFiltersList');
+        
+        let activeFilterData = {
+            category: null,
+            price: null
+        };
+        
+        // Apply filters
+        function applyFilters() {
+            let visibleCount = 0;
+            
+            productCards.forEach(card => {
+                let showCard = true;
+                
+                // Apply category filter if active
+                if (activeFilterData.category) {
+                    const categoryId = card.dataset.category;
+                    if (categoryId !== activeFilterData.category) {
+                        showCard = false;
+                    }
+                }
+                
+                // Apply price filter if active
+                if (activeFilterData.price && showCard) {
+                    const productPrice = parseFloat(card.dataset.price);
+                    
+                    if (activeFilterData.price.endsWith('+')) {
+                        // Handle price ranges like "10000+"
+                        const minPrice = parseFloat(activeFilterData.price.replace('+', ''));
+                        if (productPrice < minPrice) {
+                            showCard = false;
+                        }
+                    } else {
+                        // Handle price ranges like "1000-2000"
+                        const priceRange = activeFilterData.price.split('-');
+                        const minPrice = parseFloat(priceRange[0]);
+                        const maxPrice = parseFloat(priceRange[1]);
+                        
+                        if (productPrice < minPrice || productPrice > maxPrice) {
+                            showCard = false;
+                        }
+                    }
+                }
+                
+                // Show or hide the card
+                if (showCard) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Update product count
+            productCountElement.textContent = `${visibleCount} product${visibleCount !== 1 ? 's' : ''} found`;
+        }
+        
+        // Update active filters display
+        function updateActiveFiltersDisplay() {
+            activeFiltersList.innerHTML = '';
+            let hasActiveFilters = false;
+            
+            if (activeFilterData.category) {
+                const categoryFilter = Array.from(categoryFilters).find(f => f.dataset.category === activeFilterData.category);
+                if (categoryFilter) {
+                    hasActiveFilters = true;
+                    const badge = document.createElement('div');
+                    badge.className = 'active-filter-badge';
+                    badge.innerHTML = `Category: ${categoryFilter.textContent} <i class="fas fa-times" data-filter-type="category"></i>`;
+                    activeFiltersList.appendChild(badge);
+                }
+            }
+            
+            if (activeFilterData.price) {
+                const priceFilter = Array.from(priceFilters).find(f => f.dataset.price === activeFilterData.price);
+                if (priceFilter) {
+                    hasActiveFilters = true;
+                    const badge = document.createElement('div');
+                    badge.className = 'active-filter-badge';
+                    badge.innerHTML = `Price: ${priceFilter.textContent} <i class="fas fa-times" data-filter-type="price"></i>`;
+                    activeFiltersList.appendChild(badge);
+                }
+            }
+            
+            activeFilters.classList.toggle('d-none', !hasActiveFilters);
+            
+            // Add click listeners to remove icons
+            document.querySelectorAll('.active-filter-badge i').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const filterType = this.dataset.filterType;
+                    
+                    if (filterType === 'category') {
+                        document.querySelectorAll('#categoryFilters .filter-badge.active').forEach(b => {
+                            b.classList.remove('active');
+                        });
+                        activeFilterData.category = null;
+                    } else if (filterType === 'price') {
+                        document.querySelectorAll('#priceFilters .filter-badge.active').forEach(b => {
+                            b.classList.remove('active');
+                        });
+                        activeFilterData.price = null;
+                    }
+                    
+                    applyFilters();
+                    updateActiveFiltersDisplay();
+                });
+            });
+        }
+        
+        // Category filter click handler
+        categoryFilters.forEach(filter => {
+            filter.addEventListener('click', function() {
+                // Toggle active state
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    activeFilterData.category = null;
+                } else {
+                    document.querySelectorAll('#categoryFilters .filter-badge.active').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    activeFilterData.category = this.dataset.category;
+                }
+                
+                applyFilters();
+                updateActiveFiltersDisplay();
+            });
+        });
+        
+        // Price filter click handler
+        priceFilters.forEach(filter => {
+            filter.addEventListener('click', function() {
+                // Toggle active state
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    activeFilterData.price = null;
+                } else {
+                    document.querySelectorAll('#priceFilters .filter-badge.active').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    activeFilterData.price = this.dataset.price;
+                }
+                
+                applyFilters();
+                updateActiveFiltersDisplay();
+            });
+        });
+        
+        // Clear filters
+        clearFiltersBtn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-badge.active').forEach(b => {
+                b.classList.remove('active');
+            });
+            activeFilterData.category = null;
+            activeFilterData.price = null;
+            
+            productCards.forEach(card => {
+                card.style.display = 'block';
+            });
+            
+            productCountElement.textContent = `${productCards.length} product${productCards.length !== 1 ? 's' : ''} found`;
+            updateActiveFiltersDisplay();
+        });
+    });
+</script>
+{% endblock %} 

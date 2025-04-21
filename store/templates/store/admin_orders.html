@@ -1,0 +1,540 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Admin Orders - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        margin-top: 2rem;
+        margin-bottom: 4rem;
+    }
+    
+    .admin-sidebar {
+        background-color: var(--light-bg);
+        padding: 2rem;
+        border-radius: 0;
+        height: 100%;
+    }
+    
+    .admin-sidebar .nav-link {
+        color: var(--text-color);
+        padding: 0.8rem 1rem;
+        border-radius: 0;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+    
+    .admin-sidebar .nav-link:hover {
+        background-color: rgba(156, 140, 108, 0.1);
+        color: var(--secondary-color);
+    }
+    
+    .admin-sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .admin-sidebar .nav-link i {
+        width: 24px;
+        margin-right: 8px;
+    }
+    
+    .admin-content {
+        background-color: #fff;
+        padding: 2rem;
+        border-radius: 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        color: var(--primary-color);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    
+    .summary-card {
+        padding: 1.5rem;
+        border-radius: 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    
+    .summary-card.primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .summary-card.secondary {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    
+    .summary-card.success {
+        background-color: #1a1a1a;
+        color: white;
+    }
+    
+    .summary-card.warning {
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+    }
+    
+    .summary-card-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+        letter-spacing: 1.5px;
+        opacity: 0.8;
+    }
+    
+    .summary-card-value {
+        font-size: 2rem;
+        font-weight: 300;
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        font-weight: 500;
+        color: var(--primary-color);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        padding: 15px 10px;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        padding: 15px 10px;
+    }
+    
+    .status-badge {
+        padding: 0.4rem 0.7rem;
+        border-radius: 0;
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background-color: rgba(212, 200, 168, 0.15);
+        color: #8a7a51;
+    }
+    
+    .status-processing {
+        background-color: rgba(26, 26, 26, 0.1);
+        color: #333;
+    }
+    
+    .status-shipped {
+        background-color: rgba(156, 140, 108, 0.15);
+        color: #70654d;
+    }
+    
+    .status-delivered {
+        background-color: rgba(26, 26, 26, 0.15);
+        color: #333;
+    }
+    
+    .status-cancelled {
+        background-color: rgba(108, 117, 125, 0.15);
+        color: #6c757d;
+    }
+    
+    .toolbar {
+        background-color: var(--light-bg);
+        border-radius: 0;
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    
+    .sort-select, .filter-select {
+        border-radius: 0;
+        border: 1px solid #ddd;
+        padding: 0.5rem 1rem;
+        background-color: white;
+        cursor: pointer;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .filter-label {
+        margin-right: 0.75rem;
+        font-weight: 400;
+        color: #555;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+    
+    .pagination {
+        margin-bottom: 0;
+    }
+    
+    .pagination .page-link {
+        color: var(--primary-color);
+        border: none;
+        border-radius: 0;
+        margin: 0 3px;
+        padding: 8px 15px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    
+    .order-actions-dropdown .dropdown-toggle::after {
+        display: none;
+    }
+    
+    .nowrap {
+        white-space: nowrap;
+    }
+    
+    .btn {
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        font-weight: 400;
+        padding: 0.5rem 1.25rem;
+        border-radius: 0;
+    }
+    
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .dropdown-menu {
+        border-radius: 0;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        padding: 0.5rem 0;
+    }
+    
+    .dropdown-item {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .dropdown-item i {
+        width: 20px;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+    
+    .modal-content {
+        border-radius: 0;
+        border: none;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem;
+    }
+    
+    .modal-title {
+        font-weight: 300;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        padding: 1.25rem 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="admin-sidebar">
+                <h5 class="mb-4" style="font-weight: 300; letter-spacing: 2px; text-transform: uppercase;">Admin Panel</h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-tachometer-alt"></i> Overview
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_products' %}">
+                        <i class="fas fa-box-open"></i> Products
+                    </a>
+                    <a class="nav-link active" href="{% url 'admin_orders' %}">
+                        <i class="fas fa-shopping-bag"></i> Orders
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_users' %}">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                    <a class="nav-link" href="{% url 'admin_categories' %}">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="admin-content">
+                <h2 class="page-title">
+                    <i class="fas fa-shopping-bag me-2"></i> Orders Management
+                </h2>
+                
+                <!-- Summary Cards -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="summary-card primary">
+                            <h6 class="summary-card-title">Total Orders</h6>
+                            <p class="summary-card-value">{{ total_orders }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="summary-card secondary">
+                            <h6 class="summary-card-title">Total Revenue</h6>
+                            <p class="summary-card-value">₹{{ revenue }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Toolbar -->
+                <div class="toolbar d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="filter-form">
+                        <form method="get" class="d-flex flex-wrap gap-2">
+                            <div class="filter-group">
+                                <label class="filter-label">Sort By</label>
+                                <select name="sort" class="sort-select" onchange="this.form.submit()">
+                                    <option value="-order_date" {% if sort_by == '-order_date' %}selected{% endif %}>Newest First</option>
+                                    <option value="order_date" {% if sort_by == 'order_date' %}selected{% endif %}>Oldest First</option>
+                                    <option value="total_low" {% if sort_by == 'total_low' %}selected{% endif %}>Price: Low to High</option>
+                                    <option value="total_high" {% if sort_by == 'total_high' %}selected{% endif %}>Price: High to Low</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group ms-md-3">
+                                <label class="filter-label">Status</label>
+                                <select name="status" class="filter-select" onchange="this.form.submit()">
+                                    <option value="">All Status</option>
+                                    <option value="P" {% if status_filter == 'P' %}selected{% endif %}>Pending</option>
+                                    <option value="PR" {% if status_filter == 'PR' %}selected{% endif %}>Processing</option>
+                                    <option value="S" {% if status_filter == 'S' %}selected{% endif %}>Shipped</option>
+                                    <option value="D" {% if status_filter == 'D' %}selected{% endif %}>Delivered</option>
+                                    <option value="C" {% if status_filter == 'C' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="mt-3 mt-md-0">
+                        <strong style="font-weight: 500; letter-spacing: 1px;">{{ page_obj.paginator.count }}</strong> orders found
+                    </div>
+                </div>
+                
+                <!-- Orders Table -->
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in page_obj %}
+                            <tr>
+                                <td><strong style="letter-spacing: 1px;">#{{ order.id }}</strong></td>
+                                <td>
+                                    <div>{{ order.full_name }}</div>
+                                    <small class="text-muted">{{ order.email }}</small>
+                                </td>
+                                <td class="nowrap">{{ order.order_date|date:"M d, Y" }}</td>
+                                <td>₹{{ order.total_amount }}</td>
+                                <td>
+                                    {% if order.status == 'P' %}
+                                        <span class="status-badge status-pending">Pending</span>
+                                    {% elif order.status == 'PR' %}
+                                        <span class="status-badge status-processing">Processing</span>
+                                    {% elif order.status == 'S' %}
+                                        <span class="status-badge status-shipped">Shipped</span>
+                                    {% elif order.status == 'D' %}
+                                        <span class="status-badge status-delivered">Delivered</span>
+                                    {% elif order.status == 'C' %}
+                                        <span class="status-badge status-cancelled">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if order.payment_status %}
+                                        <span style="color: var(--secondary-color); letter-spacing: 0.5px; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> Paid</span>
+                                    {% else %}
+                                        <span style="color: #8a7a51; letter-spacing: 0.5px; font-size: 0.9rem;"><i class="fas fa-clock"></i> Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown order-actions-dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'order_detail' order.id %}" target="_blank">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#updateStatus{{ order.id }}">
+                                                    <i class="fas fa-edit"></i> Update Status
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Update Status Modal -->
+                                    <div class="modal fade" id="updateStatus{{ order.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Update Order #{{ order.id }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form method="POST">
+                                                    <div class="modal-body">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                                                        
+                                                        <div class="mb-4">
+                                                            <label class="form-label" style="letter-spacing: 1px; font-size: 0.85rem; text-transform: uppercase;">Customer</label>
+                                                            <input type="text" class="form-control" value="{{ order.full_name }}" readonly>
+                                                        </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <label class="form-label" style="letter-spacing: 1px; font-size: 0.85rem; text-transform: uppercase;">Current Status</label>
+                                                            <div>
+                                                                {% if order.status == 'P' %}
+                                                                    <span class="status-badge status-pending">Pending</span>
+                                                                {% elif order.status == 'PR' %}
+                                                                    <span class="status-badge status-processing">Processing</span>
+                                                                {% elif order.status == 'S' %}
+                                                                    <span class="status-badge status-shipped">Shipped</span>
+                                                                {% elif order.status == 'D' %}
+                                                                    <span class="status-badge status-delivered">Delivered</span>
+                                                                {% elif order.status == 'C' %}
+                                                                    <span class="status-badge status-cancelled">Cancelled</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <label for="status{{ order.id }}" class="form-label" style="letter-spacing: 1px; font-size: 0.85rem; text-transform: uppercase;">New Status</label>
+                                                            <select class="form-select" id="status{{ order.id }}" name="status">
+                                                                <option value="P" {% if order.status == 'P' %}selected{% endif %}>Pending</option>
+                                                                <option value="PR" {% if order.status == 'PR' %}selected{% endif %}>Processing</option>
+                                                                <option value="S" {% if order.status == 'S' %}selected{% endif %}>Shipped</option>
+                                                                <option value="D" {% if order.status == 'D' %}selected{% endif %}>Delivered</option>
+                                                                <option value="C" {% if order.status == 'C' %}selected{% endif %}>Cancelled</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" name="update_order" class="btn btn-dark">Update Status</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="my-4">
+                                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                        <p class="mb-0" style="letter-spacing: 1px;">No orders found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-center mt-5">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

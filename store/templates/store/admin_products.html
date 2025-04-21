@@ -1,0 +1,309 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Admin Products | DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        padding: 2rem;
+        margin: 2rem auto;
+    }
+    
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .admin-title {
+        color: var(--primary-color);
+        margin-bottom: 0;
+        font-weight: 600;
+    }
+    
+    .filter-section {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .products-table img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .stock-high {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .stock-low {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .stock-out {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .action-icons a {
+        color: #666;
+        margin-right: 10px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .action-icons a:hover {
+        color: var(--primary-color);
+    }
+    
+    .action-icons .edit-icon:hover {
+        color: #007bff;
+    }
+    
+    .action-icons .delete-icon:hover {
+        color: #dc3545;
+    }
+    
+    .pagination-section {
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h2 class="admin-title"><i class="fas fa-box me-2"></i>Manage Products</h2>
+        <a href="{% url 'add_product' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add New Product
+        </a>
+    </div>
+    
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-8">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">Stock Status</label>
+                        <select name="stock" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Stock Levels</option>
+                            <option value="low" {% if stock_filter == 'low' %}selected{% endif %}>Low Stock (< 10)</option>
+                            <option value="out" {% if stock_filter == 'out' %}selected{% endif %}>Out of Stock</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">Sort By</label>
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                            <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price (Low to High)</option>
+                            <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price (High to Low)</option>
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="stock_low" {% if sort_by == 'stock_low' %}selected{% endif %}>Stock (Low to High)</option>
+                        </select>
+                    </div>
+                    
+                    {% if category_filter or stock_filter %}
+                    <div class="col-12 mt-3">
+                        <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times me-2"></i>Clear Filters
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Products Summary</h5>
+                        <p class="card-text">Total Products: <strong>{{ total_products }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover products-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in page_obj %}
+                <tr>
+                    <td>
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="no-image">No Image</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ product.name }}</strong>
+                        {% if product.on_sale %}
+                            <span class="badge bg-danger ms-2">SALE</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.category.name }}</td>
+                    <td>
+                        {% if product.on_sale %}
+                            <span class="text-decoration-line-through text-muted">₹{{ product.price }}</span>
+                            <span class="text-danger ms-2">₹{{ product.sale_price }}</span>
+                        {% else %}
+                            ₹{{ product.price }}
+                        {% endif %}
+                    </td>
+                    <td>{{ product.stock }}</td>
+                    <td>
+                        {% if product.stock == 0 %}
+                            <span class="status-badge stock-out">Out of Stock</span>
+                        {% elif product.stock < 10 %}
+                            <span class="status-badge stock-low">Low Stock</span>
+                        {% else %}
+                            <span class="status-badge stock-high">In Stock</span>
+                        {% endif %}
+                    </td>
+                    <td class="action-icons">
+                        <a href="{% url 'product_detail' product.id %}" class="view-icon" title="View Product">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'edit_product' product.id %}" class="edit-icon" title="Edit Product">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#" class="delete-icon" title="Delete Product" data-bs-toggle="modal" data-bs-target="#deleteModal{{ product.id }}">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="deleteModal{{ product.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Deletion</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete the product <strong>{{ product.name }}</strong>?
+                                        This action cannot be undone.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form method="POST" action="{% url 'delete_product' product.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <div class="alert alert-info mb-0">
+                            <p><i class="fas fa-info-circle me-2"></i>No products found matching your criteria.</p>
+                            {% if category_filter or stock_filter %}
+                                <a href="{% url 'admin_products' %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    Clear Filters
+                                </a>
+                            {% else %}
+                                <a href="{% url 'add_product' %}" class="btn btn-sm btn-primary mt-2">
+                                    Add Your First Product
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-section">
+        <nav aria-label="Product pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if stock_filter %}&stock={{ stock_filter }}{% endif %}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

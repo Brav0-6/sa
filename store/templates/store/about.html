@@ -1,0 +1,172 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}About Us - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="page-title text-center mb-4">About DNK Saree Store</h1>
+            
+            <div class="about-section">
+                <div class="about-image mb-4">
+                    <img src="https://images.unsplash.com/photo-1606913832518-8a18b96dc2fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHNhcmVlJTIwc3RvcmV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=800&q=60" 
+                         alt="DNK Saree Store" class="img-fluid rounded">
+                </div>
+                
+                <div class="about-content">
+                    <h2 class="section-title">Our Story</h2>
+                    <p>Founded in 2010, DNK Saree Store has been a trusted name in bringing traditional and contemporary sarees to our valued customers. What started as a small family business has now grown into one of the most respected saree retailers in the region.</p>
+                    
+                    <p>Our journey began with a simple mission: to preserve the rich heritage of Indian textiles while making them accessible to modern women. Over the years, we have cultivated relationships with master weavers and artisans across India to bring you authentic, high-quality sarees that tell a story.</p>
+                    
+                    <h2 class="section-title mt-5">Our Values</h2>
+                    <div class="row mt-4">
+                        <div class="col-md-4 mb-4">
+                            <div class="value-card text-center p-4">
+                                <div class="value-icon mb-3">
+                                    <i class="fas fa-gem fa-2x"></i>
+                                </div>
+                                <h5>Quality</h5>
+                                <p>We never compromise on the quality of our products, ensuring that each saree meets our strict standards.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="value-card text-center p-4">
+                                <div class="value-icon mb-3">
+                                    <i class="fas fa-hands-helping fa-2x"></i>
+                                </div>
+                                <h5>Artisan Support</h5>
+                                <p>We work directly with artisans, ensuring fair wages and preserving traditional craftsmanship.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="value-card text-center p-4">
+                                <div class="value-icon mb-3">
+                                    <i class="fas fa-leaf fa-2x"></i>
+                                </div>
+                                <h5>Sustainability</h5>
+                                <p>We are committed to sustainable practices and supporting eco-friendly production methods.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="section-title mt-5">Our Collection</h2>
+                    <p>At DNK Saree Store, we pride ourselves on offering a diverse collection of sarees that cater to various tastes, occasions, and preferences. From traditional silk sarees for weddings to contemporary designer pieces for everyday wear, our collection is carefully curated to provide something for everyone.</p>
+                    
+                    <p>We specialize in:</p>
+                    <ul>
+                        <li>Handwoven silk sarees from different regions of India</li>
+                        <li>Cotton sarees for everyday comfort</li>
+                        <li>Designer party wear sarees</li>
+                        <li>Embroidered and embellished festive wear</li>
+                        <li>Contemporary fusion sarees for the modern woman</li>
+                    </ul>
+                    
+                    <h2 class="section-title mt-5">Meet Our Team</h2>
+                    <div class="row mt-4">
+                        <div class="col-md-4 mb-4">
+                            <div class="team-member text-center">
+                                <div class="team-image mb-3">
+                                    <img src="https://randomuser.me/api/portraits/women/30.jpg" alt="Team Member" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <h5>Deepa Nair</h5>
+                                <p class="text-muted">Founder & CEO</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="team-member text-center">
+                                <div class="team-image mb-3">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Team Member" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <h5>Nikhil Kumar</h5>
+                                <p class="text-muted">Design Head</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="team-member text-center">
+                                <div class="team-image mb-3">
+                                    <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Team Member" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <h5>Kavita Sharma</h5>
+                                <p class="text-muted">Customer Relations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-title {
+        color: #333;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .page-title:after {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 3px;
+        background: #ff6b6b;
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .section-title {
+        color: #444;
+        font-size: 1.8rem;
+        margin-bottom: 1.2rem;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    .section-title:after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 2px;
+        background: #ff6b6b;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+    }
+    
+    .about-content p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #555;
+        margin-bottom: 1.5rem;
+    }
+    
+    .value-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+    
+    .value-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .value-icon {
+        color: #ff6b6b;
+    }
+    
+    .team-member {
+        transition: transform 0.3s ease;
+    }
+    
+    .team-member:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %} 

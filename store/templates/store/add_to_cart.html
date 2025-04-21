@@ -1,0 +1,11 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Added to Cart{% endblock %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h3>{{ product.name }} added to cart!</h3>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Continue Shopping</a>
+    <a href="{% url 'view_cart' %}" class="btn btn-success mt-3">View Cart</a>
+</div>
+{% endblock %}

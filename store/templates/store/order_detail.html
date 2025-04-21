@@ -1,0 +1,382 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Order #{{ order.id }} - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-detail-card {
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+    
+    .order-header {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .order-id {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .order-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .order-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+    
+    .status-processing {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .status-shipped {
+        background-color: rgba(13, 202, 240, 0.1);
+        color: #0dcaf0;
+    }
+    
+    .status-delivered {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .status-cancelled {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .order-section {
+        padding: 1.5rem;
+    }
+    
+    .order-section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        color: #333;
+    }
+    
+    .order-address {
+        line-height: 1.6;
+    }
+    
+    .order-items {
+        margin-bottom: 1.5rem;
+    }
+    
+    .order-item {
+        display: flex;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .order-item-img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 1rem;
+    }
+    
+    .order-item-details {
+        flex-grow: 1;
+    }
+    
+    .order-item-name {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .order-item-price {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .order-summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .order-total {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+    }
+    
+    .btn-track-order {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-track-order:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+    
+    /* Order Timeline Styles */
+    .order-timeline {
+        margin: 0;
+        padding: 0;
+        position: relative;
+    }
+    
+    .order-timeline:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 15px;
+        height: 100%;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-item.active {
+        opacity: 1;
+    }
+    
+    .timeline-icon {
+        position: absolute;
+        left: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-item.active .timeline-icon {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+    
+    .timeline-content h5 {
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+    
+    .timeline-item.active .timeline-content h5 {
+        color: var(--primary-color);
+    }
+    
+    .timeline-content p {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .tracking-number {
+        font-family: monospace;
+        padding: 2px 4px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'profile' %}">My Account</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Order #{{ order.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="order-detail-card">
+        <!-- Order Header -->
+        <div class="order-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <span class="order-id">Order #{{ order.id }}</span>
+                    <div class="order-date">Placed on {{ order.order_date|date:"F d, Y" }}</div>
+                </div>
+                <div class="col-md-3 text-md-center">
+                    <div class="order-status status-{{ order.status }}">{{ order.get_status_display }}</div>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    {% if order.status == "shipped" and order.tracking_number %}
+                    <a href="{{ order.get_tracking_url }}" target="_blank" class="btn btn-track-order">
+                        <i class="fas fa-truck me-2"></i>Track Order
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tracking Info -->
+        {% if order.status != "pending" and order.status != "cancelled" %}
+        <div class="order-section tracking-info">
+            <h3 class="order-section-title">Tracking Information</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    {% if order.tracking_number %}
+                    <div class="mb-3">
+                        <strong>Tracking Number:</strong> <span class="tracking-number">{{ order.tracking_number }}</span>
+                    </div>
+                    <div>
+                        {% if order.get_tracking_url %}
+                        <a href="{{ order.get_tracking_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Track Package
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        {% if order.status == "processing" %}
+                        <i class="fas fa-info-circle me-2"></i> Your order is being processed. Tracking information will be available when shipped.
+                        {% elif order.status == "delivered" %}
+                        <i class="fas fa-check-circle me-2"></i> Your order has been delivered successfully.
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <div class="order-timeline">
+                        <div class="timeline-item {% if order.status != "pending" %}active{% endif %}">
+                            <div class="timeline-icon"><i class="fas fa-check-circle"></i></div>
+                            <div class="timeline-content">
+                                <h5>Order Placed</h5>
+                                <p>{{ order.order_date|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if order.status == "processing" or order.status == "shipped" or order.status == "delivered" %}active{% endif %}">
+                            <div class="timeline-icon"><i class="fas fa-box"></i></div>
+                            <div class="timeline-content">
+                                <h5>Processing</h5>
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if order.status == "shipped" or order.status == "delivered" %}active{% endif %}">
+                            <div class="timeline-icon"><i class="fas fa-shipping-fast"></i></div>
+                            <div class="timeline-content">
+                                <h5>Shipped</h5>
+                                {% if order.tracking_number %}<p>Tracking: {{ order.tracking_number }}</p>{% endif %}
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if order.status == "delivered" %}active{% endif %}">
+                            <div class="timeline-icon"><i class="fas fa-home"></i></div>
+                            <div class="timeline-content">
+                                <h5>Delivered</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Shipping Address -->
+        <div class="order-section">
+            <h3 class="order-section-title">Shipping Address</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="order-address">
+                        <strong>{{ order.full_name }}</strong><br>
+                        {{ order.address }}<br>
+                        {{ order.city }}, {{ order.state }} {{ order.pincode }}<br>
+                        Phone: {{ order.phone }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="order-summary-row">
+                        <span>Payment Method:</span>
+                        <span>{{ order.get_payment_method_display }}</span>
+                    </div>
+                    <div class="order-summary-row">
+                        <span>Payment Status:</span>
+                        <span>{% if order.payment_status %}Paid{% else %}Pending{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div class="order-section">
+            <h3 class="order-section-title">Order Items</h3>
+            <div class="order-items">
+                {% for item in order_items %}
+                <div class="order-item">
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="order-item-img">
+                    <div class="order-item-details">
+                        <div class="order-item-name">{{ item.product.name }}</div>
+                        <div class="order-item-price">₹{{ item.price }} x {{ item.quantity }}</div>
+                    </div>
+                    <div class="order-item-total">
+                        <strong>₹{{ item.total_price }}</strong>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <div class="order-summary-row">
+                    <span>Subtotal:</span>
+                    <span>₹{{ order.total_amount|sub:order.shipping_cost }}</span>
+                </div>
+                <div class="order-summary-row">
+                    <span>Shipping:</span>
+                    <span>{% if order.shipping_cost == 0 %}Free{% else %}₹{{ order.shipping_cost }}{% endif %}</span>
+                </div>
+                {% if order.shipping_method %}
+                <div class="order-summary-row">
+                    <span>Shipping Method:</span>
+                    <span>{{ order.shipping_method }}</span>
+                </div>
+                {% endif %}
+                <div class="order-summary-row order-total">
+                    <span>Total:</span>
+                    <span>₹{{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

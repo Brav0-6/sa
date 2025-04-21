@@ -1,0 +1,534 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Admin: Manage Reviews - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #2c2c2c 100%);
+        color: white;
+        border-radius: 0;
+        padding: 3rem;
+        margin-bottom: 2.5rem;
+        box-shadow: var(--box-shadow);
+    }
+    
+    .admin-section {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+    }
+    
+    .admin-title {
+        color: var(--bs-primary);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--bs-primary);
+    }
+    
+    .filter-form {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .review-card {
+        border-left: 4px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .review-card:hover {
+        border-left-color: var(--bs-primary);
+        background-color: #f8f9fa;
+    }
+    
+    .review-rating {
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+    
+    .star-filled {
+        color: #FFD700;
+    }
+    
+    .star-empty {
+        color: #e0e0e0;
+    }
+    
+    .stats-card {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 1rem;
+        height: 100%;
+    }
+    
+    .stats-card h5 {
+        color: var(--bs-primary);
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .rating-badge {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .rating-badge-1 {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .rating-badge-2 {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .rating-badge-3 {
+        background-color: #f0f0f0;
+        color: #555;
+    }
+    
+    .rating-badge-4 {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .rating-badge-5 {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .admin-table td, .admin-table th {
+        vertical-align: middle;
+    }
+    
+    .review-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .product-avatar {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .product-name {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 8px;
+    }
+    
+    .review-comment {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            {% include 'store/admin_sidebar.html' with active_page='reviews' %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h1 class="display-5 fw-light mb-2" style="letter-spacing: 2px;">Manage Reviews</h1>
+                        <p class="mb-0" style="opacity: 0.8;">Review and moderate customer product reviews.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <!-- Filter Form -->
+                <div class="filter-form">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Product</label>
+                            <select name="product" class="form-select">
+                                <option value="">All Products</option>
+                                {% for product in all_products %}
+                                <option value="{{ product.id }}" {% if product_filter == product.id|stringformat:"s" %}selected{% endif %}>{{ product.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">User</label>
+                            <select name="user" class="form-select">
+                                <option value="">All Users</option>
+                                {% for user in all_users %}
+                                <option value="{{ user.username }}" {% if user_filter == user.username %}selected{% endif %}>{{ user.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Rating</label>
+                            <select name="rating" class="form-select">
+                                <option value="">All Ratings</option>
+                                <option value="5" {% if rating_filter == '5' %}selected{% endif %}>5 Stars</option>
+                                <option value="4" {% if rating_filter == '4' %}selected{% endif %}>4 Stars</option>
+                                <option value="3" {% if rating_filter == '3' %}selected{% endif %}>3 Stars</option>
+                                <option value="2" {% if rating_filter == '2' %}selected{% endif %}>2 Stars</option>
+                                <option value="1" {% if rating_filter == '1' %}selected{% endif %}>1 Star</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" class="form-control" value="{{ date_filter|default:'' }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">Filter</button>
+                            <a href="{% url 'admin_reviews' %}" class="btn btn-outline-secondary">Reset</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Statistics Row -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <h5>Product Rating Statistics</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Avg. Rating</th>
+                                            <th>Reviews</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for stat in product_stats|slice:":5" %}
+                                        <tr>
+                                            <td class="product-name"><a href="{% url 'product_detail' stat.product.id %}">{{ stat.product.name }}</a></td>
+                                            <td>
+                                                <span class="rating-badge rating-badge-{{ stat.avg_rating|floatformat:0 }}">
+                                                    {{ stat.avg_rating|floatformat:1 }}
+                                                </span>
+                                            </td>
+                                            <td>{{ stat.total_reviews }}</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="3" class="text-center">No product statistics available</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="stats-card">
+                            <h5>Recent Review Activity</h5>
+                            <div id="reviewChart" style="height: 200px;">
+                                <!-- Chart will be rendered here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reviews Table -->
+                <div class="table-responsive">
+                    <table class="table admin-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>User</th>
+                                <th>Rating</th>
+                                <th>Title & Comment</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in page_obj %}
+                            <tr class="review-card">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ review.product.image.url }}" alt="{{ review.product.name }}" class="product-avatar me-2">
+                                        <div class="product-name">
+                                            <a href="{% url 'product_detail' review.product.id %}">{{ review.product.name }}</a>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar">
+                                            {{ review.user.username.0|upper }}
+                                        </div>
+                                        <span>{{ review.user.username }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="review-rating">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                            <span class="star-filled"><i class="fas fa-star"></i></span>
+                                            {% else %}
+                                            <span class="star-empty"><i class="fas fa-star"></i></span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ review.title }}</strong>
+                                    </div>
+                                    <div class="review-comment">
+                                        {{ review.comment }}
+                                    </div>
+                                </td>
+                                <td>{{ review.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="review-actions d-flex">
+                                        <a href="#" class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#reviewModal{{ review.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                                            <button type="submit" name="delete_review" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this review?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-comment-slash fa-3x mb-3"></i>
+                                        <p>No reviews found based on the selected filters.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Detail Modals -->
+{% for review in page_obj %}
+<div class="modal fade" id="reviewModal{{ review.id }}" tabindex="-1" aria-labelledby="reviewModalLabel{{ review.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel{{ review.id }}">Review Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="review-detail">
+                    <div class="mb-3 d-flex align-items-center">
+                        <img src="{{ review.product.image.url }}" alt="{{ review.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 10px;">
+                        <div>
+                            <h5 class="mb-1">{{ review.product.name }}</h5>
+                            <div>
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                    <span class="star-filled"><i class="fas fa-star"></i></span>
+                                    {% else %}
+                                    <span class="star-empty"><i class="fas fa-star"></i></span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>{{ review.title }}</strong>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ review.comment }}</p>
+                        </div>
+                        <div class="card-footer text-muted d-flex justify-content-between">
+                            <div>
+                                <i class="fas fa-user me-1"></i> {{ review.user.username }}
+                            </div>
+                            <div>
+                                <i class="fas fa-calendar-alt me-1"></i> {{ review.created_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                            <button type="submit" name="delete_review" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-1"></i> Delete Review
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sample data for the chart - in a real application, you would pass this from the backend
+        const ctx = document.getElementById('reviewChart').getContext('2d');
+        const chartData = {
+            labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+            datasets: [{
+                label: 'Review Distribution',
+                data: [
+                    {% with five_star=page_obj.paginator.object_list|dictsortreversed:"rating"|first %}
+                    {{ five_star.rating|default:0 }}
+                    {% endwith %},
+                    {% with four_star=page_obj.paginator.object_list|dictsortreversed:"rating"|first %}
+                    {{ four_star.rating|default:0 }}
+                    {% endwith %},
+                    {% with three_star=page_obj.paginator.object_list|dictsortreversed:"rating"|first %}
+                    {{ three_star.rating|default:0 }}
+                    {% endwith %},
+                    {% with two_star=page_obj.paginator.object_list|dictsortreversed:"rating"|first %}
+                    {{ two_star.rating|default:0 }}
+                    {% endwith %},
+                    {% with one_star=page_obj.paginator.object_list|dictsortreversed:"rating"|first %}
+                    {{ one_star.rating|default:0 }}
+                    {% endwith %}
+                ],
+                backgroundColor: [
+                    '#d1ecf1',  // 5 stars
+                    '#d4edda',  // 4 stars
+                    '#f0f0f0',  // 3 stars
+                    '#fff3cd',  // 2 stars
+                    '#f8d7da'   // 1 star
+                ],
+                borderColor: [
+                    '#0c5460',
+                    '#155724',
+                    '#555',
+                    '#856404',
+                    '#721c24'
+                ],
+                borderWidth: 1
+            }]
+        };
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Reviews'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Rating'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Review Rating Distribution'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

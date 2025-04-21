@@ -1,0 +1,792 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-header {
+        background-color: var(--primary-color);
+        padding: 40px 0;
+        margin-bottom: 40px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(132, 0, 60, 0.9) 0%, rgba(132, 0, 60, 1) 100%);
+        z-index: -1;
+    }
+    
+    .category-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(ellipse at center, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+        transform: rotate(30deg);
+        z-index: -1;
+    }
+    
+    .category-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .category-description {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .category-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .filters-section {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .filters-section:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .filter-badge:hover, .filter-badge.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    .sort-select {
+        border-radius: 20px;
+        padding: 8px 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .sort-select:focus {
+        box-shadow: 0 0 0 0.2rem rgba(132, 0, 60, 0.25);
+        border-color: var(--primary-color);
+    }
+    
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+    
+    .product-card {
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        position: relative;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .product-card .card-img-top {
+        height: 250px;
+        object-fit: cover;
+        transition: all 0.5s ease;
+    }
+    
+    .product-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .product-card .card-body {
+        padding: 20px;
+    }
+    
+    .product-card .card-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        color: #333;
+        height: 2.4rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .price-container {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .regular-price {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #333;
+    }
+    
+    .sale-price {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #dc3545;
+    }
+    
+    .old-price {
+        text-decoration: line-through;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .discount-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        z-index: 2;
+    }
+    
+    .btn-view-product {
+        background-color: var(--primary-color);
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        display: inline-block;
+        font-weight: 500;
+    }
+    
+    .btn-view-product:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(132, 0, 60, 0.2);
+    }
+    
+    .btn-quick-add {
+        background-color: transparent;
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        margin-left: 10px;
+    }
+    
+    .btn-quick-add:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .stock-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        z-index: 2;
+    }
+    
+    .in-stock {
+        background-color: rgba(40, 167, 69, 0.8);
+        color: white;
+    }
+    
+    .low-stock {
+        background-color: rgba(255, 193, 7, 0.8);
+        color: white;
+    }
+    
+    .out-of-stock {
+        background-color: rgba(108, 117, 125, 0.8);
+        color: white;
+    }
+    
+    /* Pagination */
+    .pagination {
+        justify-content: center;
+        margin-top: 40px;
+        margin-bottom: 60px;
+    }
+    
+    .page-item .page-link {
+        color: var(--primary-color);
+        border-radius: 5px;
+        margin: 0 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .page-item .page-link:hover {
+        background-color: rgba(132, 0, 60, 0.1);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    /* No products found */
+    .no-products {
+        text-align: center;
+        padding: 60px 0;
+    }
+    
+    .no-products-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+    
+    .no-products-message {
+        font-size: 1.5rem;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+    
+    .no-products-suggestion {
+        color: #6c757d;
+        max-width: 500px;
+        margin: 0 auto 30px;
+    }
+    
+    /* Loading animation */
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 40px 0;
+    }
+    
+    .spinner-border {
+        color: var(--primary-color);
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fadeIn {
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .stagger-item {
+        opacity: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="category-header text-center">
+    <div class="container">
+        <i class="fas fa-tags category-icon"></i>
+        <h1 class="category-title">{{ category.name }}</h1>
+        {% if category.description %}
+        <p class="category-description">{{ category.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filters and Sorting Section -->
+    <div class="filters-section fadeIn">
+        <div class="row">
+            <div class="col-md-8">
+                <p class="filter-label">Filter by:</p>
+                
+                <!-- Price Range Filter -->
+                <div class="filter-group mb-3">
+                    <p class="mb-2">Price Range:</p>
+                    <div class="filter-options">
+                        <span class="filter-badge" data-price="0-500">Under ₹500</span>
+                        <span class="filter-badge" data-price="500-1000">₹500 - ₹1000</span>
+                        <span class="filter-badge" data-price="1000-2000">₹1000 - ₹2000</span>
+                        <span class="filter-badge" data-price="2000-5000">₹2000 - ₹5000</span>
+                        <span class="filter-badge" data-price="5000+">Above ₹5000</span>
+                    </div>
+                </div>
+                
+                <!-- Fabric Type Filter -->
+                <div class="filter-group">
+                    <p class="mb-2">Fabric Type:</p>
+                    <div class="filter-options">
+                        <span class="filter-badge" data-fabric="silk">Silk</span>
+                        <span class="filter-badge" data-fabric="cotton">Cotton</span>
+                        <span class="filter-badge" data-fabric="georgette">Georgette</span>
+                        <span class="filter-badge" data-fabric="chiffon">Chiffon</span>
+                        <span class="filter-badge" data-fabric="linen">Linen</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <p class="filter-label">Sort by:</p>
+                <select class="form-select sort-select" id="productSort">
+                    <option value="default">Featured</option>
+                    <option value="price_low">Price: Low to High</option>
+                    <option value="price_high">Price: High to Low</option>
+                    <option value="newest">Newest First</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Filters Display -->
+    <div class="active-filters mb-4 d-none">
+        <p class="mb-2">Active Filters:</p>
+        <div id="activeFiltersList" class="d-flex flex-wrap gap-2">
+            <!-- Active filters will be added here dynamically -->
+        </div>
+    </div>
+    
+    <!-- Products Count -->
+    <div class="mb-4 fadeIn">
+        <p class="text-muted">Showing <span id="productCount">{{ products.count }}</span> products</p>
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="card product-card stagger-item" data-price="{{ product.sale_price|default:product.price }}" data-fabric="{{ product.fabric_type|default:'' }}">
+            {% if product.discount_percentage > 0 %}
+            <div class="discount-badge">{{ product.discount_percentage }}% OFF</div>
+            {% endif %}
+            
+            {% if product.stock > 0 %}
+                {% if product.stock <= 5 %}
+                <div class="stock-badge low-stock">Low Stock</div>
+                {% else %}
+                <div class="stock-badge in-stock">In Stock</div>
+                {% endif %}
+            {% else %}
+            <div class="stock-badge out-of-stock">Out of Stock</div>
+            {% endif %}
+            
+            <a href="{% url 'product_detail' product.slug %}">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            </a>
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <div class="price-container">
+                    {% if product.on_sale %}
+                    <span class="old-price">₹{{ product.price }}</span>
+                    <span class="sale-price">₹{{ product.sale_price }}</span>
+                    {% else %}
+                    <span class="regular-price">₹{{ product.price }}</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex">
+                    <a href="{% url 'product_detail' product.slug %}" class="btn btn-view-product">View Details</a>
+                    {% if product.stock > 0 %}
+                    <button class="btn btn-quick-add quick-add-btn" data-product-id="{{ product.id }}">
+                        <i class="fas fa-cart-plus"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-products col-12">
+            <div class="no-products-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3 class="no-products-message">No products found</h3>
+            <p class="no-products-suggestion">Try adjusting your search or filter criteria to find what you're looking for.</p>
+            <a href="{% url 'home' %}" class="btn btn-view-product">
+                <i class="fas fa-home me-2"></i> Back to Home
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading products...</p>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Quick Add Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="quickAddToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Item Added</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <span id="toastMessage">Product added to your cart!</span>
+            <div class="mt-2 pt-2 border-top">
+                <a href="{% url 'view_cart' %}" class="btn btn-sm btn-view-product">View Cart</a>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="toast">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animation for product cards
+        const staggerItems = document.querySelectorAll('.stagger-item');
+        
+        function animateItems() {
+            staggerItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('fadeIn');
+                }, 100 * index);
+            });
+        }
+        
+        // Trigger animations
+        animateItems();
+        
+        // Filter functionality
+        const filterBadges = document.querySelectorAll('.filter-badge');
+        const productCards = document.querySelectorAll('.product-card');
+        const productCountElement = document.getElementById('productCount');
+        const activeFilters = document.querySelector('.active-filters');
+        const activeFiltersList = document.getElementById('activeFiltersList');
+        let activeFilterData = {
+            price: null,
+            fabric: null
+        };
+        
+        // Initialize the toast
+        const quickAddToast = new bootstrap.Toast(document.getElementById('quickAddToast'));
+        
+        // Handle filter badges click
+        filterBadges.forEach(badge => {
+            badge.addEventListener('click', function() {
+                const filterType = this.dataset.price ? 'price' : 'fabric';
+                const filterValue = this.dataset.price || this.dataset.fabric;
+                
+                // Check if this filter is already active
+                if (this.classList.contains('active')) {
+                    // Remove the active class
+                    this.classList.remove('active');
+                    
+                    // Clear this filter from active filters
+                    if (filterType === 'price') {
+                        activeFilterData.price = null;
+                    } else {
+                        activeFilterData.fabric = null;
+                    }
+                } else {
+                    // Remove active class from other badges of the same type
+                    document.querySelectorAll(`.filter-badge[data-${filterType}]`).forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Add active class to this badge
+                    this.classList.add('active');
+                    
+                    // Set this filter in active filters
+                    if (filterType === 'price') {
+                        activeFilterData.price = filterValue;
+                    } else {
+                        activeFilterData.fabric = filterValue;
+                    }
+                }
+                
+                // Apply filters
+                applyFilters();
+                updateActiveFiltersDisplay();
+            });
+        });
+        
+        function applyFilters() {
+            let visibleCount = 0;
+            
+            productCards.forEach(card => {
+                let showCard = true;
+                
+                // Apply price filter if active
+                if (activeFilterData.price) {
+                    const productPrice = parseFloat(card.dataset.price);
+                    const priceRange = activeFilterData.price.split('-');
+                    
+                    if (priceRange.length === 2) {
+                        const minPrice = parseFloat(priceRange[0]);
+                        const maxPrice = parseFloat(priceRange[1]);
+                        
+                        if (productPrice < minPrice || (maxPrice && productPrice > maxPrice)) {
+                            showCard = false;
+                        }
+                    } else if (activeFilterData.price.endsWith('+')) {
+                        const minPrice = parseFloat(activeFilterData.price.replace('+', ''));
+                        if (productPrice < minPrice) {
+                            showCard = false;
+                        }
+                    }
+                }
+                
+                // Apply fabric filter if active
+                if (activeFilterData.fabric && showCard) {
+                    const productFabric = card.dataset.fabric.toLowerCase();
+                    if (productFabric !== activeFilterData.fabric) {
+                        showCard = false;
+                    }
+                }
+                
+                // Show or hide the card
+                card.style.display = showCard ? 'block' : 'none';
+                
+                // Count visible products
+                if (showCard) {
+                    visibleCount++;
+                }
+            });
+            
+            // Update product count
+            productCountElement.textContent = visibleCount;
+            
+            // Show no products message if needed
+            const noProductsMessage = document.querySelector('.no-products');
+            if (noProductsMessage) {
+                noProductsMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+        
+        function updateActiveFiltersDisplay() {
+            // Clear the current active filters list
+            activeFiltersList.innerHTML = '';
+            
+            let hasActiveFilters = false;
+            
+            // Add price filter if active
+            if (activeFilterData.price) {
+                hasActiveFilters = true;
+                const priceFilter = document.createElement('span');
+                priceFilter.className = 'badge bg-primary me-2';
+                
+                let priceText = '';
+                if (activeFilterData.price === '0-500') {
+                    priceText = 'Under ₹500';
+                } else if (activeFilterData.price === '5000+') {
+                    priceText = 'Above ₹5000';
+                } else {
+                    const range = activeFilterData.price.split('-');
+                    priceText = `₹${range[0]} - ₹${range[1]}`;
+                }
+                
+                priceFilter.innerHTML = `${priceText} <i class="fas fa-times ms-2" data-filter-type="price"></i>`;
+                activeFiltersList.appendChild(priceFilter);
+            }
+            
+            // Add fabric filter if active
+            if (activeFilterData.fabric) {
+                hasActiveFilters = true;
+                const fabricFilter = document.createElement('span');
+                fabricFilter.className = 'badge bg-primary me-2';
+                fabricFilter.innerHTML = `Fabric: ${activeFilterData.fabric.charAt(0).toUpperCase() + activeFilterData.fabric.slice(1)} <i class="fas fa-times ms-2" data-filter-type="fabric"></i>`;
+                activeFiltersList.appendChild(fabricFilter);
+            }
+            
+            // Show or hide the active filters section
+            activeFilters.classList.toggle('d-none', !hasActiveFilters);
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('#activeFiltersList i.fa-times').forEach(removeIcon => {
+                removeIcon.addEventListener('click', function() {
+                    const filterType = this.dataset.filterType;
+                    
+                    // Remove this filter
+                    activeFilterData[filterType] = null;
+                    
+                    // Remove active class from related badges
+                    document.querySelectorAll(`.filter-badge[data-${filterType}]`).forEach(badge => {
+                        badge.classList.remove('active');
+                    });
+                    
+                    // Re-apply filters
+                    applyFilters();
+                    updateActiveFiltersDisplay();
+                });
+            });
+        }
+        
+        // Sorting functionality
+        const sortSelect = document.getElementById('productSort');
+        const productsGrid = document.querySelector('.products-grid');
+        
+        sortSelect.addEventListener('change', function() {
+            const sortValue = this.value;
+            const productArray = Array.from(productCards);
+            
+            // Show loading spinner
+            document.querySelector('.loading-spinner').style.display = 'block';
+            productsGrid.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                // Sort products
+                productArray.sort((a, b) => {
+                    switch (sortValue) {
+                        case 'price_low':
+                            return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                        case 'price_high':
+                            return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                        case 'newest':
+                            // For demo purposes, just randomize
+                            return 0.5 - Math.random();
+                        case 'popular':
+                            // For demo purposes, just randomize
+                            return 0.5 - Math.random();
+                        default:
+                            return 0;
+                    }
+                });
+                
+                // Reorder elements in the DOM
+                productArray.forEach(product => {
+                    productsGrid.appendChild(product);
+                });
+                
+                // Hide loading spinner and restore opacity
+                document.querySelector('.loading-spinner').style.display = 'none';
+                productsGrid.style.opacity = '1';
+            }, 500); // Simulate loading time
+        });
+        
+        // Quick add to cart functionality
+        const quickAddButtons = document.querySelectorAll('.quick-add-btn');
+        
+        quickAddButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                
+                // Simulate adding to cart with a visual feedback
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                
+                // Simulate an AJAX request (would be replaced with actual implementation)
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    
+                    // Show toast notification
+                    quickAddToast.show();
+                    
+                    // Reset button after a delay
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-cart-plus"></i>';
+                    }, 2000);
+                }, 800);
+            });
+        });
+    });
+</script>
+{% endblock %} 

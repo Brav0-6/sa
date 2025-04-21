@@ -1,0 +1,865 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Edit Product | Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-product-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .form-title {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    .form-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: var(--secondary-color);
+    }
+    
+    .section-block {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .section-block:hover {
+        box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+        transform: translateY(-3px);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .section-icon {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        margin-right: 10px;
+        animation: pulse 2s infinite;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .form-control {
+        border-radius: 6px;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.15);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 0.5rem;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+    }
+    
+    .upload-area {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 2rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .upload-area:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(var(--primary-color-rgb), 0.03);
+    }
+    
+    .upload-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .upload-area:hover .upload-icon {
+        transform: scale(1.2);
+    }
+    
+    .image-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-top: 1rem;
+        border: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+    
+    .current-image {
+        display: block;
+    }
+    
+    .btn-product {
+        padding: 10px 20px;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .btn-outline-secondary {
+        color: #666;
+        border-color: #ddd;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        color: #333;
+        transform: translateY(-2px);
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .helper-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: none;
+        background-color: rgba(220, 53, 69, 0.05);
+        padding: 0.3rem 0.5rem;
+        border-radius: 4px;
+        border-left: 2px solid #dc3545;
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .was-validated .form-control:invalid ~ .error-message {
+        display: block;
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background-color: rgba(var(--primary-color-rgb), 0.3);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+    }
+    
+    #additionalImagesContainer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    
+    .additional-image-preview {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+    
+    .additional-image-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    
+    .current-images-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    
+    .current-image-item {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        border-radius: 6px;
+        border: 1px solid #eee;
+    }
+    
+    .current-image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-5px); }
+        40%, 80% { transform: translateX(5px); }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
+        }
+    }
+    
+    .form-section {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease;
+    }
+    
+    .form-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #fff;
+        color: #333;
+        padding: 0;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 1050;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s ease;
+        border-left: 4px solid #dc3545;
+        max-width: 350px;
+        width: 100%;
+    }
+    
+    .toast-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #efefef;
+        padding: 0.5rem 1rem;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+    }
+    
+    .toast-body {
+        padding: 1rem;
+    }
+    
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home me-2"></i>Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'admin_products' %}"><i class="fas fa-boxes me-2"></i>Products</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-edit me-2"></i>Edit Product</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="fas fa-edit me-2 text-primary"></i>Edit Product</h1>
+    </div>
+    
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="edit-product-container">
+            <h2 class="form-title">Edit Product: {{ product.name }}</h2>
+            
+            <form id="editProductForm" method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <!-- Basic Information Section -->
+                <div class="section-block form-section" id="basicInfoSection">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <h3 class="section-title">Basic Information</h3>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_name" class="form-label">Product Title*</label>
+                            <input type="text" class="form-control" id="id_name" name="name" value="{{ product.name }}" required>
+                            <div class="error-message">Please enter a product title</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_category" class="form-label">Category*</label>
+                            <select class="form-control" id="id_category" name="category" required>
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if product.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="error-message">Please select a category</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_brand" class="form-label">Brand</label>
+                            <select class="form-control" id="id_brand" name="brand">
+                                <option value="">Select a brand (optional)</option>
+                                {% for brand in brands %}
+                                <option value="{{ brand.id }}" {% if product.brand and product.brand.id == brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_fabric_type" class="form-label">Fabric Type*</label>
+                            <input type="text" class="form-control" id="id_fabric_type" name="fabric_type" value="{{ product.fabric_type }}" required>
+                            <div class="error-message">Please enter a fabric type</div>
+                            <div class="helper-text">E.g., Cotton, Silk, Polyester, etc.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="id_is_featured" name="is_featured" {% if product.is_featured %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_featured">
+                                    Feature this product
+                                </label>
+                                <div class="helper-text">Featured products appear on the homepage</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pricing and Stock Section -->
+                <div class="section-block form-section" id="pricingSection">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <h3 class="section-title">Pricing & Stock</h3>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_price" class="form-label">Regular Price (₹)*</label>
+                            <input type="number" class="form-control" id="id_price" name="price" step="0.01" min="0" value="{{ product.price }}" required>
+                            <div class="error-message">Please enter a valid price</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_stock" class="form-label">Stock Quantity*</label>
+                            <input type="number" class="form-control" id="id_stock" name="stock" min="0" value="{{ product.stock }}" required>
+                            <div class="error-message">Please enter a valid stock quantity</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="id_on_sale" name="on_sale" {% if product.on_sale %}checked{% endif %}>
+                                <label class="form-check-label" for="id_on_sale">
+                                    On Sale
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3 sale-price-field" {% if not product.on_sale %}style="display: none;"{% endif %}>
+                            <label for="id_sale_price" class="form-label">Sale Price (₹)*</label>
+                            <input type="number" class="form-control" id="id_sale_price" name="sale_price" step="0.01" min="0" value="{{ product.sale_price|default:'' }}">
+                            <div class="error-message">Sale price must be less than regular price</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description and Images Section -->
+                <div class="section-block form-section" id="descriptionSection">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3 class="section-title">Description & Images</h3>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="id_description" class="form-label">Product Description*</label>
+                            <textarea class="form-control" id="id_description" name="description" rows="4" required>{{ product.description }}</textarea>
+                            <div class="error-message">Please enter a product description</div>
+                            <div class="helper-text">Provide a detailed description of the product, including material, care instructions, and size details</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_main_image" class="form-label">Main Image</label>
+                            <div class="upload-area" id="mainImageUpload">
+                                <input type="file" class="d-none" id="id_main_image" name="main_image" accept="image/*">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <p>Click to change the main product image</p>
+                                <p class="helper-text">Optional, Max size: 2MB</p>
+                            </div>
+                            <div class="error-message" id="mainImageError"></div>
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="Current main image" class="image-preview current-image" id="mainImagePreview">
+                                <div class="helper-text mt-2">Current image shown above. Upload to replace.</div>
+                            {% else %}
+                                <img src="" alt="Main image preview" class="image-preview" id="mainImagePreview">
+                                <div class="helper-text mt-2">No current image.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_additional_images" class="form-label">Additional Images</label>
+                            <div class="upload-area" id="additionalImagesUpload">
+                                <input type="file" class="d-none" id="id_additional_images" name="additional_images" accept="image/*" multiple>
+                                <div class="upload-icon">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                                <p>Click to upload more images</p>
+                                <p class="helper-text">Up to 5 images, Max size: 2MB each</p>
+                            </div>
+                            <div class="error-message" id="additionalImagesError"></div>
+                            <div id="additionalImagesContainer"></div>
+                            
+                            {% if additional_images %}
+                                <div class="mt-3">
+                                    <h6>Current Additional Images</h6>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="replace_images" name="replace_images">
+                                        <label class="form-check-label" for="replace_images">
+                                            Replace all existing images
+                                        </label>
+                                    </div>
+                                    <div class="current-images-container">
+                                        {% for img in additional_images %}
+                                            <div class="current-image-item">
+                                                <img src="{{ img.image.url }}" alt="Additional image {{ forloop.counter }}">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary btn-product">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-product" id="submitButton">
+                        <i class="fas fa-save"></i> Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="validationToast">
+        <div class="toast-header">
+            <strong class="me-auto text-danger"><i class="fas fa-exclamation-circle me-2"></i>Form Error</strong>
+            <button type="button" class="btn-close" aria-label="Close" onclick="document.getElementById('validationToast').classList.remove('show')"></button>
+        </div>
+        <div class="toast-body">
+            Please fill all required fields
+        </div>
+    </div>
+
+    <div class="loading-container" id="loadingContainer">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing your product...</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make form sections visible with animation
+        const formSections = document.querySelectorAll('.form-section');
+        formSections.forEach((section, index) => {
+            setTimeout(() => {
+                section.classList.add('visible');
+            }, index * 200);
+        });
+        
+        // Handle On Sale checkbox
+        const onSaleCheckbox = document.getElementById('id_on_sale');
+        const salePriceField = document.querySelector('.sale-price-field');
+        
+        onSaleCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                salePriceField.style.display = 'block';
+                document.getElementById('id_sale_price').setAttribute('required', '');
+            } else {
+                salePriceField.style.display = 'none';
+                document.getElementById('id_sale_price').removeAttribute('required');
+            }
+        });
+        
+        // Main image upload
+        const mainImageUpload = document.getElementById('mainImageUpload');
+        const mainImageInput = document.getElementById('id_main_image');
+        const mainImagePreview = document.getElementById('mainImagePreview');
+        const mainImageError = document.getElementById('mainImageError');
+        
+        mainImageUpload.addEventListener('click', function(e) {
+            mainImageInput.click();
+            
+            // Create ripple effect
+            let ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            let rect = mainImageUpload.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            
+            mainImageUpload.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+        
+        mainImageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // Validate file size (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    mainImageError.textContent = 'Image size exceeds 2MB limit';
+                    mainImageError.style.display = 'block';
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file type
+                if (!file.type.match('image.*')) {
+                    mainImageError.textContent = 'Please select an image file';
+                    mainImageError.style.display = 'block';
+                    this.value = '';
+                    return;
+                }
+                
+                mainImageError.style.display = 'none';
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    mainImagePreview.src = e.target.result;
+                    mainImagePreview.style.display = 'block';
+                    mainImagePreview.classList.add('current-image');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Additional images upload
+        const additionalImagesUpload = document.getElementById('additionalImagesUpload');
+        const additionalImagesInput = document.getElementById('id_additional_images');
+        const additionalImagesContainer = document.getElementById('additionalImagesContainer');
+        const additionalImagesError = document.getElementById('additionalImagesError');
+        
+        additionalImagesUpload.addEventListener('click', function(e) {
+            additionalImagesInput.click();
+            
+            // Create ripple effect
+            let ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            let rect = additionalImagesUpload.getBoundingClientRect();
+            ripple.style.left = (e.clientX - rect.left) + 'px';
+            ripple.style.top = (e.clientY - rect.top) + 'px';
+            
+            additionalImagesUpload.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+        
+        additionalImagesInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                // Validate number of files (max 5)
+                if (this.files.length > 5) {
+                    additionalImagesError.textContent = 'Maximum 5 images allowed';
+                    additionalImagesError.style.display = 'block';
+                    this.value = '';
+                    additionalImagesContainer.innerHTML = '';
+                    return;
+                }
+                
+                let invalidFiles = false;
+                additionalImagesContainer.innerHTML = '';
+                
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    
+                    // Validate file size (2MB max)
+                    if (file.size > 2 * 1024 * 1024) {
+                        invalidFiles = true;
+                        continue;
+                    }
+                    
+                    // Validate file type
+                    if (!file.type.match('image.*')) {
+                        invalidFiles = true;
+                        continue;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('additional-image-preview');
+                        additionalImagesContainer.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
+                }
+                
+                if (invalidFiles) {
+                    additionalImagesError.textContent = 'Some files were skipped (size > 2MB or not images)';
+                    additionalImagesError.style.display = 'block';
+                } else {
+                    additionalImagesError.style.display = 'none';
+                }
+            }
+        });
+        
+        // Form validation and submission
+        const form = document.getElementById('editProductForm');
+        const validationToast = document.getElementById('validationToast');
+        const loadingContainer = document.getElementById('loadingContainer');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Initialize form validation
+            let isValid = true;
+            const requiredFields = [
+                { id: 'id_name', name: 'Product Title' },
+                { id: 'id_category', name: 'Category' },
+                { id: 'id_fabric_type', name: 'Fabric Type' },
+                { id: 'id_price', name: 'Regular Price' },
+                { id: 'id_stock', name: 'Stock Quantity' },
+                { id: 'id_description', name: 'Description' }
+            ];
+            
+            // Check each required field
+            for(const field of requiredFields) {
+                const inputElement = document.getElementById(field.id);
+                if (!inputElement || !inputElement.value.trim()) {
+                    isValid = false;
+                    // Show error message
+                    if (inputElement) {
+                        const errorElement = inputElement.nextElementSibling;
+                        if (errorElement && errorElement.classList.contains('error-message')) {
+                            errorElement.textContent = `${field.name} is required`;
+                            errorElement.style.display = 'block';
+                        }
+                        // Add invalid class
+                        inputElement.classList.add('is-invalid');
+                    }
+                } else {
+                    // Clear error if field is valid
+                    if (inputElement) {
+                        const errorElement = inputElement.nextElementSibling;
+                        if (errorElement && errorElement.classList.contains('error-message')) {
+                            errorElement.style.display = 'none';
+                        }
+                        // Remove invalid class
+                        inputElement.classList.remove('is-invalid');
+                    }
+                }
+            }
+            
+            // Note: For edit form, main image might not be required if already exists
+            // Only validate if a new file is being uploaded and no existing image
+            const mainImageInput = document.getElementById('id_main_image');
+            const mainImagePreview = document.getElementById('mainImagePreview');
+            const hasExistingImage = mainImagePreview && mainImagePreview.src && !mainImagePreview.src.endsWith('#');
+            
+            if (mainImageInput && !mainImageInput.files.length && !hasExistingImage) {
+                isValid = false;
+                const mainImageError = document.getElementById('mainImageError');
+                if (mainImageError) {
+                    mainImageError.textContent = 'Main product image is required';
+                    mainImageError.style.display = 'block';
+                }
+            }
+            
+            // Check if sale price is required and valid
+            if (onSaleCheckbox.checked) {
+                const priceInput = document.getElementById('id_price');
+                const salePriceField = document.getElementById('id_sale_price');
+                
+                if (salePriceField) {
+                    const salePriceError = document.querySelector('.sale-price-field .error-message');
+                    
+                    if (!salePriceField.value.trim()) {
+                        isValid = false;
+                        if (salePriceError) {
+                            salePriceError.textContent = 'Sale price is required when product is on sale';
+                            salePriceError.style.display = 'block';
+                        }
+                    } else if (priceInput && priceInput.value.trim()) {
+                        // Make sure both values are converted to numbers
+                        const regularPrice = parseFloat(priceInput.value);
+                        const salePrice = parseFloat(salePriceField.value);
+                        
+                        if (!isNaN(regularPrice) && !isNaN(salePrice) && salePrice >= regularPrice) {
+                            isValid = false;
+                            if (salePriceError) {
+                                salePriceError.textContent = 'Sale price must be less than regular price';
+                                salePriceError.style.display = 'block';
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // If form is invalid
+            if (!isValid) {
+                e.stopPropagation();
+                form.classList.add('was-validated');
+                
+                // Show toast message with specific message
+                const toastBody = validationToast.querySelector('.toast-body');
+                if (toastBody) {
+                    toastBody.textContent = 'Please fill all required fields correctly';
+                }
+                validationToast.classList.add('show');
+                setTimeout(() => {
+                    validationToast.classList.remove('show');
+                }, 3000);
+                
+                // Scroll to first invalid field
+                const firstInvalidField = form.querySelector('.is-invalid') || 
+                                          form.querySelector(':invalid');
+                if (firstInvalidField) {
+                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                return;
+            }
+            
+            // Show loading spinner
+            loadingContainer.style.display = 'flex';
+            
+            // Submit the form
+            this.submit();
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,254 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Edit Review - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-review-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .edit-review-title {
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 10px;
+        display: inline-block;
+    }
+    
+    .edit-review-title:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background-color: var(--secondary-color);
+    }
+    
+    .product-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-right: 1rem;
+    }
+    
+    .product-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .product-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    
+    .product-link:hover {
+        text-decoration: underline;
+    }
+    
+    .rating-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .rating-title {
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+    }
+    
+    .rating-options {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .rating-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .rating-input {
+        display: none;
+    }
+    
+    .rating-label {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .rating-label:hover {
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+        transform: scale(1.1);
+    }
+    
+    .rating-input:checked + .rating-label {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .rating-text {
+        font-size: 0.8rem;
+        color: #777;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+    
+    .btn-save-review {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save-review:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn-cancel {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    /* Star Rating Display */
+    .rating-descriptions {
+        font-size: 0.8rem;
+        color: #777;
+        margin-top: 0.5rem;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .edit-review-container {
+        animation: fadeIn 0.5s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_detail' review.product.id %}">{{ review.product.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Review</li>
+        </ol>
+    </nav>
+
+    <div class="edit-review-container">
+        <h1 class="edit-review-title">Edit Your Review</h1>
+        
+        <div class="product-info">
+            <img src="{{ review.product.image.url }}" alt="{{ review.product.name }}" class="product-image">
+            <div>
+                <h3 class="product-name">{{ review.product.name }}</h3>
+                <a href="{% url 'product_detail' review.product.id %}" class="product-link">
+                    <i class="fas fa-external-link-alt me-1"></i> View Product
+                </a>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="rating-container">
+                <h4 class="rating-title">Your Rating</h4>
+                <div class="rating-options">
+                    {% for value, name in form.rating.field.choices %}
+                    <div class="rating-option">
+                        <input type="radio" name="rating" id="rating-{{ value }}" value="{{ value }}" 
+                               class="rating-input" {% if form.rating.value == value|stringformat:"s" %}checked{% endif %}>
+                        <label for="rating-{{ value }}" class="rating-label">{{ value }}</label>
+                        <span class="rating-text">
+                            {% if value == '1' %}Poor{% elif value == '2' %}Fair{% elif value == '3' %}Good{% elif value == '4' %}Very Good{% else %}Excellent{% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if form.rating.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.rating.errors }}
+                </div>
+                {% endif %}
+                <div class="rating-descriptions">
+                    <strong>1</strong> - Poor, not recommended
+                    <br>
+                    <strong>2</strong> - Fair, below average
+                    <br>
+                    <strong>3</strong> - Good, average product
+                    <br>
+                    <strong>4</strong> - Very good, above average
+                    <br>
+                    <strong>5</strong> - Excellent, highly recommended
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.comment.id_for_label }}" class="form-label">Your Review</label>
+                {{ form.comment }}
+                {% if form.comment.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.comment.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'product_detail' review.product.id %}" class="btn btn-cancel">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-save-review">
+                    <i class="fas fa-save me-1"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

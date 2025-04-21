@@ -1,0 +1,33 @@
+<!-- Admin Sidebar Navigation -->
+<div class="admin-sidebar">
+    <h5 class="mb-4" style="font-weight: 300; letter-spacing: 2px; text-transform: uppercase;">Admin Panel</h5>
+    <nav class="nav flex-column">
+        <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">
+            <i class="fas fa-tachometer-alt"></i> Overview
+        </a>
+        <a class="nav-link {% if active_page == 'products' %}active{% endif %}" href="{% url 'admin_products' %}">
+            <i class="fas fa-box-open"></i> Products
+        </a>
+        <a class="nav-link {% if active_page == 'orders' %}active{% endif %}" href="{% url 'admin_orders' %}">
+            <i class="fas fa-shopping-bag"></i> Orders
+        </a>
+        <a class="nav-link {% if active_page == 'users' %}active{% endif %}" href="{% url 'admin_users' %}">
+            <i class="fas fa-users"></i> Users
+        </a>
+        <a class="nav-link {% if active_page == 'categories' %}active{% endif %}" href="{% url 'admin_categories' %}">
+            <i class="fas fa-tags"></i> Categories
+        </a>
+        <a class="nav-link {% if active_page == 'shipping' %}active{% endif %}" href="{% url 'admin_shipping_config' %}">
+            <i class="fas fa-truck"></i> Shipping
+        </a>
+        <a class="nav-link {% if active_page == 'messages' %}active{% endif %}" href="{% url 'admin_messages' %}">
+            <i class="fas fa-envelope"></i> Messages
+        </a>
+        <a class="nav-link {% if active_page == 'reviews' %}active{% endif %}" href="{% url 'admin_reviews' %}">
+            <i class="fas fa-star"></i> Reviews
+        </a>
+        <a class="nav-link" href="{% url 'home' %}">
+            <i class="fas fa-home"></i> Back to Store
+        </a>
+    </nav>
+</div> 

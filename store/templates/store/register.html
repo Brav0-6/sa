@@ -1,0 +1,118 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Register - DNK Saree Store{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="form-container shadow-sm p-4 p-md-5 rounded">
+            <h2 class="form-title text-center mb-4">Create Your Account</h2>
+            
+            <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.username.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.email.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        {{ form.password1 }}
+                    </div>
+                    {% if form.password1.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.password1.errors }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text">
+                        <small>Your password must be at least 8 characters long and contain letters, numbers, and special characters.</small>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        {{ form.password2 }}
+                    </div>
+                    {% if form.password2.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.password2.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                    <label class="form-check-label" for="termsCheck">I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a></label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3">Create Account</button>
+                
+                <div class="text-center mt-4">
+                    <p>Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Login</a></p>
+                </div>
+    </form>
+            
+            <div class="divider d-flex align-items-center my-4">
+                <span class="text-muted mx-3">Or Register With</span>
+            </div>
+            
+            <div class="social-login d-flex justify-content-center">
+                <a href="#" class="btn btn-outline-secondary me-2"><i class="fab fa-google"></i></a>
+                <a href="#" class="btn btn-outline-secondary me-2"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="btn btn-outline-secondary"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Add form-specific styles */
+    .form-container {
+        background-color: white;
+    }
+    
+    .form-control {
+        height: 50px;
+    }
+    
+    .input-group-text {
+        background-color: transparent;
+    }
+    
+    .divider {
+        position: relative;
+    }
+    
+    .divider::before, .divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}

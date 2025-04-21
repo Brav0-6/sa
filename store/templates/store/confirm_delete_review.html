@@ -1,0 +1,147 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Delete Review - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confirm-delete-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .confirm-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 1.5rem;
+    }
+    
+    .confirm-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+    
+    .confirm-message {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    
+    .confirm-product {
+        padding: 1rem;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .confirm-product-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-right: 1rem;
+    }
+    
+    .confirm-product-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .confirm-review-text {
+        font-style: italic;
+        background-color: #f9f9f9;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 3px solid #ddd;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+    
+    .confirm-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .btn-confirm-delete {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-confirm-delete:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn-cancel {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="confirm-delete-container">
+        <div class="confirm-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1 class="confirm-title">Delete Review</h1>
+        <p class="confirm-message">Are you sure you want to delete your review for this product? This action cannot be undone.</p>
+        
+        <div class="confirm-product">
+            <img src="{{ review.product.image.url }}" alt="{{ review.product.name }}" class="confirm-product-img">
+            <div>
+                <h3 class="confirm-product-name">{{ review.product.name }}</h3>
+                <div class="small text-muted">Reviewed on {{ review.created_at|date:"F d, Y" }}</div>
+            </div>
+        </div>
+        
+        <div class="confirm-review-text">
+            "{{ review.comment }}"
+        </div>
+        
+        <div class="confirm-actions">
+            <a href="{% url 'product_detail' review.product.id %}" class="btn btn-cancel">
+                <i class="fas fa-arrow-left me-1"></i> Cancel
+            </a>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-confirm-delete">
+                    <i class="fas fa-trash-alt me-1"></i> Delete Review
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

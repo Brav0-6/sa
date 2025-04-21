@@ -1,0 +1,271 @@
+{% extends 'store/base.html' %}
+{% load static %}
+
+{% block title %}Shipping Configuration - DNK Saree Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    
+    .admin-sidebar .nav-link {
+        color: var(--text-color);
+        padding: 0.8rem 1rem;
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-sidebar .nav-link:hover {
+        background-color: rgba(0,0,0,0.05);
+    }
+    
+    .admin-sidebar .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .admin-sidebar .nav-link i {
+        width: 24px;
+        margin-right: 8px;
+    }
+    
+    .admin-card {
+        border: none;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        border-radius: 8px;
+    }
+    
+    .admin-card .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+    }
+    
+    .summary-card {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .summary-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            {% include 'store/admin_sidebar.html' with active_page='shipping' %}
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Global Settings Card -->
+            <div class="admin-card card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Global Shipping Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'update_shipping_config' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_free_shipping" name="enable_free_shipping" {% if config.enable_free_shipping %}checked{% endif %}>
+                                    <label class="form-check-label" for="enable_free_shipping">Enable Free Shipping</label>
+                                </div>
+                                <div class="form-text">If enabled, all orders will have free shipping regardless of amount.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="free_shipping_min" class="form-label">Free Shipping Minimum (₹)</label>
+                                <input type="number" class="form-control" id="free_shipping_min" name="free_shipping_min" value="{{ config.free_shipping_min_amount }}" min="0" step="0.01">
+                                <div class="form-text">Orders above this amount qualify for free shipping.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="default_shipping_cost" class="form-label">Default Shipping Cost (₹)</label>
+                                <input type="number" class="form-control" id="default_shipping_cost" name="default_shipping_cost" value="{{ config.default_shipping_cost }}" min="0" step="0.01">
+                                <div class="form-text">Default cost when no specific rates apply.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_location_based" name="enable_location_based" {% if config.enable_location_based_shipping %}checked{% endif %}>
+                                    <label class="form-check-label" for="enable_location_based">Enable Location-Based Rates</label>
+                                </div>
+                                <div class="form-text">If enabled, customers will see shipping rates based on their location.</div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary mt-2">
+                            <i class="fas fa-save me-1"></i> Save Global Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Shipping Rates Card -->
+            <div class="admin-card card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Shipping Rates</h5>
+                    <a href="{% url 'add_shipping_rate' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i> Add New Rate
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Cards Row -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="summary-card bg-light p-3 rounded">
+                                <h6 class="summary-title">Total Rates</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="summary-icon me-3">
+                                        <i class="fas fa-tags fa-2x text-primary"></i>
+                                    </div>
+                                    <div class="summary-value">{{ rates.count }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-card bg-light p-3 rounded">
+                                <h6 class="summary-title">Active Rates</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="summary-icon me-3">
+                                        <i class="fas fa-toggle-on fa-2x text-success"></i>
+                                    </div>
+                                    <div class="summary-value">{{ active_rates }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-card bg-light p-3 rounded">
+                                <h6 class="summary-title">Free Shipping Rates</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="summary-icon me-3">
+                                        <i class="fas fa-gift fa-2x text-danger"></i>
+                                    </div>
+                                    <div class="summary-value">{{ free_rates }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if rates %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Location</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rate in rates %}
+                                <tr>
+                                    <td>{{ rate.name }}</td>
+                                    <td>
+                                        {% if rate.rate_type == 'nationwide' %}
+                                            <span class="badge bg-info">Nationwide</span>
+                                        {% elif rate.rate_type == 'pincode_range' %}
+                                            <span class="badge bg-warning text-dark">Pincode Range</span>
+                                        {% elif rate.rate_type == 'state' %}
+                                            <span class="badge bg-primary">State</span>
+                                        {% elif rate.rate_type == 'city' %}
+                                            <span class="badge bg-secondary">City</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if rate.rate_type == 'nationwide' %}
+                                            All India
+                                        {% elif rate.rate_type == 'pincode_range' %}
+                                            {{ rate.pincode_from }} - {{ rate.pincode_to }}
+                                        {% elif rate.rate_type == 'state' %}
+                                            {{ rate.state }}
+                                        {% elif rate.rate_type == 'city' %}
+                                            {{ rate.city }}, {{ rate.state }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if rate.is_free %}
+                                            <span class="badge bg-success">FREE</span>
+                                        {% else %}
+                                            ₹{{ rate.cost }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if rate.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'edit_shipping_rate' rate.id %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRateModal{{ rate.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Delete Modal for this rate -->
+                                <div class="modal fade" id="deleteRateModal{{ rate.id }}" tabindex="-1" aria-labelledby="deleteRateModalLabel{{ rate.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteRateModalLabel{{ rate.id }}">Confirm Delete</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete the shipping rate <strong>{{ rate.name }}</strong>?</p>
+                                                <p class="text-danger">This action cannot be undone.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'delete_shipping_rate' rate.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete Rate</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="no-rates-container text-center py-5">
+                        <div class="no-rates-icon mb-3">
+                            <i class="fas fa-truck-loading fa-3x text-muted"></i>
+                        </div>
+                        <h5 class="mb-2">No Shipping Rates Defined</h5>
+                        <p class="text-muted mb-4">Create your first shipping rate to offer location-based shipping options to your customers.</p>
+                        <a href="{% url 'add_shipping_rate' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> Add First Rate
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
